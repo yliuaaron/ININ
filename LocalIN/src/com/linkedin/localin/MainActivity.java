@@ -28,6 +28,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
@@ -369,34 +370,59 @@ public class MainActivity extends Activity
     
     private void queryNearbyUsers()
     {
-    	HttpGet queryget = new HttpGet("http://aaronplex.net/project/localin/q.php?lat=" + bestLocation.getLatitude() + "&lng=" + bestLocation.getLongitude());
-    	try
-    	{
-    		HttpResponse response = httpclient.execute(queryget);
-    		if(response.getStatusLine().getStatusCode() == 200)
-    		{
-    			BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-    			StringBuilder sb = new StringBuilder();
-    			String line;
-    			while((line = br.readLine()) != null)
-    			{
-    				sb.append(line + "\n");
-    				//Log.d("info", line);
-    			}
-    			br.close();
-    			Log.d("info", sb.toString());
-    			
-    			JSONArray array = (JSONArray)JSONValue.parse(sb.toString());
-    			loadNearbyUsers(array);
-    			
-    		}
-    	}
-    	catch(Exception e)
-    	{
-    		e.printStackTrace();
-    		Log.d("info", "http get error");
-    	}
-    	
+    	AsyncTask<Void, Void, JSONArray> mTask = new AsyncTask<Void, Void, JSONArray>() {
+    		
+            @Override
+            protected void onPreExecute() {
+                // show the intro video
+                
+            }
+            
+            @Override
+            protected JSONArray doInBackground(Void... params) {
+                // Start authenticating...
+                // not using attemptAuth() since that's on a
+                // separate thread thereby causing synchronization
+                // issues
+                // Note: since "handler" parameter is null in authenticate(), the callback to AuthenticatorActivity
+                // will not occur
+            	HttpGet queryget = new HttpGet("http://aaronplex.net/project/localin/q.php?lat=" + bestLocation.getLatitude() + "&lng=" + bestLocation.getLongitude());
+            	JSONArray array = null;
+            	try
+            	{
+            		HttpResponse response = httpclient.execute(queryget);
+            		if(response.getStatusLine().getStatusCode() == 200)
+            		{
+            			BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+            			StringBuilder sb = new StringBuilder();
+            			String line;
+            			while((line = br.readLine()) != null)
+            			{
+            				sb.append(line + "\n");
+            				//Log.d("info", line);
+            			}
+            			br.close();
+            			Log.d("info", sb.toString());
+            			
+            			array = (JSONArray)JSONValue.parse(sb.toString());
+            			
+            			
+            		}
+            	}
+            	catch(Exception e)
+            	{
+            		e.printStackTrace();
+            		Log.d("info", "http get error");
+            	}
+            	return array;
+            }
+
+            @Override
+            protected void onPostExecute(JSONArray result) {
+            	loadNearbyUsers(result);
+            }
+        };
+        mTask.execute((Void[]) null);    	
     }
     
     private void loadNearbyUsers(JSONArray array)
@@ -421,7 +447,8 @@ public class MainActivity extends Activity
     	}
     	
     	ContactListAdapter adapter = new ContactListAdapter(this, contacts);
-        listView.setAdapter(adapter);
+    	
+    	listView.setAdapter(adapter);
     }
     
     public static double distanceByLatLng(double lat1, double lng1, double lat2, double lng2)
