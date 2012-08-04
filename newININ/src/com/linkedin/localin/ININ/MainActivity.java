@@ -737,13 +737,12 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     private void loadNearbyUsers(JSONArray array)
     {
     	//contacts;
+    	ArrayList<Contact> tempList = new ArrayList<Contact>();
     	for(int i = 0; i < array.size(); i++)
     	{
     		JSONObject user = (JSONObject)array.get(i);
     		int memberId = Integer.parseInt((String)user.get("memberId"));
-    		Contact contact = getContact(memberId);
-    		if(contact==null){
-    			contact = new Contact(
+    		Contact contact =  new Contact(
   		              Long.parseLong((String)user.get("memberId")),
   		              (String)user.get("id"),
   		              (String)user.get("firstName"),
@@ -757,29 +756,16 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
   		              (String)user.get("timestamp"));
     			contact.setDistance(distanceByLatLng(bestLocation.getLatitude(), bestLocation.getLongitude(),
       							contact.getLatitude(), contact.getLongitude()));
-    			contacts.add(contact);		            		  
-    		}
-    		else{
-    			Double lat = Double.parseDouble((String)user.get("lat"));
-	            Double lon = Double.parseDouble((String)user.get("lng"));
-	            String timestamp = (String)user.get("timestamp");
-	            contact.setLat(lat);
-	            contact.setLon(lon);
-	            contact.setTime(timestamp);
-	            contact.setDistance(distanceByLatLng(bestLocation.getLatitude(), bestLocation.getLongitude(),
-							contact.getLatitude(), contact.getLongitude()));
-    		}
+    			tempList.add(contact);		            		  
+    		
     		
     	}
     	Collections.sort(contacts);
     	
-    	if(adapter == null){
-    		ContactListAdapter adapter = new ContactListAdapter(this, contacts);
+    		
+    		ContactListAdapter adapter = new ContactListAdapter(this, tempList);
     		listView.setAdapter(adapter);
-    	}
-    	else{
-    		adapter.notifyDataSetChanged();
-    	}
+    	
         btnFilter = (Button)mSectionsPagerAdapter.list.getView().findViewById(R.id.btnFilter);
         editFilter = (EditText)mSectionsPagerAdapter.list.getView().findViewById(R.id.editFilter);
     	btnFilter.setOnClickListener(new OnClickListener() 
