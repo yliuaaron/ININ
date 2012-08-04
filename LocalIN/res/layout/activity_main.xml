@@ -58,16 +58,14 @@
                         android:text="Small Text"
                         android:textAppearance="?android:attr/textAppearanceSmall" />
 
-                    <ListView
+                    <eu.erikw.PullToRefreshListView
                         android:id="@+id/listView1"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="5dip"
                         android:layout_marginTop="5dip"
                         android:layout_weight="1"
-                        android:overScrollMode="always" >
-
-                    </ListView>
+                        android:overScrollMode="always" />
 
                 </LinearLayout>
 
