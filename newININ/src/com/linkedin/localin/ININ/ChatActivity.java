@@ -66,9 +66,6 @@ public class ChatActivity extends Activity implements OnClickListener
 			String messageid = null;
 			try
 			{
-				int id = 456;
-				
-				
 				HttpResponse response = client.execute(mget);
 				if(response.getStatusLine().getStatusCode() == 200)
 				{
@@ -150,8 +147,8 @@ public class ChatActivity extends Activity implements OnClickListener
         protected void onPostExecute(JSONArray jsonArray) {
 			try{
 				if(jsonArray!=null){
-					for(int i =0;i<jsonArray.length();i++){
-						JSONObject obj = jsonArray.getJSONObject(i);
+					for(int i =jsonArray.length();i>0;i--){
+						JSONObject obj = jsonArray.getJSONObject(i-1);
 						Message m = new Message(obj.getLong("id"),obj.getLong("fromUser") ,obj.getLong("toUser"), obj.getString("message"), obj.getString("time"), 0);
 						messages.add(m);
 					}
@@ -192,7 +189,8 @@ public class ChatActivity extends Activity implements OnClickListener
         fetchRecent.execute((Void[]) null);  
         handler =  new Handler();
         
-        
+        fetchTimer = new Timer();
+        fetchTimer.schedule(fetchTask, 1000,1000);
     }
     Timer fetchTimer;
     @Override
@@ -201,17 +199,11 @@ public class ChatActivity extends Activity implements OnClickListener
         return true;
     }
     
-    @Override
-    public void onPause(){
-    	fetchTimer.cancel();
-    	fetchTimer = null;
-    	super.onPause();
-    }
+    
 
-    public void onResume(){
-    	fetchTimer = new Timer();
-    	fetchTimer.schedule(fetchTask, 1000,1000);
-    	super.onResume();
+    public void onStop(){
+    	fetchTimer.cancel();
+    	super.onStop();
     }
     
 	@Override
