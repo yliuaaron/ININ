@@ -62,7 +62,7 @@ public class ChatActivity extends Activity implements OnClickListener
 			// TODO Auto-generated method stub
 			HttpClient client = new DefaultHttpClient();
 		       
-	        HttpGet mget = new HttpGet("http://aaronplex.net/project/localin/retrieve.php?to=456");
+	        HttpGet mget = new HttpGet("http://aaronplex.net/project/localin/retrieve.php?to="+contact.getMemberId());
 			String messageid = null;
 			try
 			{
@@ -116,8 +116,6 @@ public class ChatActivity extends Activity implements OnClickListener
 	        HttpGet mget = new HttpGet("http://aaronplex.net/project/localin/recent.php?user="+contact.getMemberId());
 			try
 			{
-				int id = 456;
-				
 				
 				HttpResponse response = client.execute(mget);
 				if(response.getStatusLine().getStatusCode() == 200)
