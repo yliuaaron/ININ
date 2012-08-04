@@ -2,11 +2,14 @@ package com.linkedin.localin.ININ;
 
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.List;
 
 import com.example.androidhive.ImageLoader;
 import com.google.code.linkedinapi.client.LinkedInApiClient;
+import com.google.code.linkedinapi.client.constant.ApplicationConstants;
 import com.google.code.linkedinapi.client.enumeration.ProfileField;
 import com.google.code.linkedinapi.client.oauth.LinkedInAccessToken;
+import com.google.code.linkedinapi.schema.HttpHeader;
 import com.google.code.linkedinapi.schema.Person;
 
 import android.os.Bundle;
@@ -38,6 +41,7 @@ public class ProfileActivity extends Activity
 	
 	LinkedInApiClient client;
 	LinkedInAccessToken token;
+	String invitationHeader;
 	
 	Contact contact;
 
@@ -99,12 +103,25 @@ public class ProfileActivity extends Activity
         imageLoader.DisplayImage(contact.getPicUrl(), profileImage);
         
         Person person = client.getProfileById(contact.getId(), EnumSet.of(
+        				    ProfileField.API_STANDARD_PROFILE_REQUEST_HEADERS,
 		        			ProfileField.NUM_CONNECTIONS,
 		        			ProfileField.DISTANCE,
 		        		    ProfileField.RELATION_TO_VIEWER_RELATED_CONNECTIONS,
 		        			ProfileField.RELATION_TO_VIEWER,
 		        			ProfileField.EDUCATIONS
 		        		));
+        
+        List<HttpHeader> headers = person.getApiStandardProfileRequest().getHeaders().getHttpHeaderList();
+        for(int i = 0; i < headers.size(); i++)
+        {
+        	if(headers.get(i).getName().equals(ApplicationConstants.AUTH_HEADER_NAME))
+        	{
+        		invitationHeader = headers.get(i).getValue();
+        		break;
+        	}
+        }
+        
+        Log.d("info", invitationHeader);
         
         connText.setText("" + person.getNumConnections());
         commonText.setText("" + person.getRelationToViewer().getRelatedConnections().getTotal());
