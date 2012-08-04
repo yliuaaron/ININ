@@ -54,7 +54,7 @@
 	        android:text="on the corner of the first floor" />
 	    
 	    <TextView
-	        android:id="@+id/distance"
+	        android:id="@+id/timestamp"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_alignParentRight="true"

@@ -1,10 +1,11 @@
 package com.linkedin.localin.ININ;
 
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class Msg 
+public class Msg implements Serializable, Comparable<Msg>
 {
 	private long _id;
 	private long _from;
@@ -55,6 +56,15 @@ public class Msg
 	public int getRetrieved()
 	{
 		return _retrieved;
+	}
+	
+	@Override
+	public int compareTo(Msg another) 
+	{
+		if(_time.before(another.getTime()))
+			return -1;
+		else
+			return 1;
 	}
 
 }

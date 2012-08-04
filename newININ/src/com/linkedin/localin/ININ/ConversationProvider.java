@@ -33,8 +33,6 @@ public class ConversationProvider extends ContentProvider {
 		    TIMESTAMP + " TIMESTAMP," + 
 		    LASTSENTENCE + " text) ";
 	
-	
-	
 	//Uri
 	private static final String AUTHORITY = "com.linkedin.localin.ININ";
 	public static final int RECORDS = 1;

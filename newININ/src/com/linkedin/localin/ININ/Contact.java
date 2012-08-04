@@ -27,6 +27,28 @@ public class Contact implements Serializable, Comparable<Contact>
 	private double _lat;
 	private double _lng;
 	
+	public void setLat(Double lat){
+		this._lat = lat;
+	}
+	
+	public void setLon(Double lon){
+		this._lng = lon;
+	}
+	
+	public void setTime(String lastUpdate){
+		try 
+		{
+			DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			_lastUpdate = df.parse(lastUpdate);
+		} 
+		catch (ParseException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			_lastUpdate = new Date();
+		}
+	}
+	
 	private double _distance;
 	
 	public Contact(long memberId, 

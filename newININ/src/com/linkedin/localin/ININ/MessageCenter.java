@@ -15,6 +15,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.linkedin.localin.ININ.ChatActivity.msgHandler;
+import com.linkedin.localin.ININ.MainActivity.ConversationHandler;
 
 
 import android.app.Service;
@@ -36,12 +37,22 @@ public class MessageCenter extends Service {
 	//records will be stored into local database
 	private static final boolean TODB = true;
 	
-	HashMap<Integer,msgHandler> handlers = new HashMap<Integer,msgHandler>();
-	HashMap<Integer,ArrayList<Msg>> bufferPool = new HashMap<Integer,ArrayList<Msg>>();
+	private HashMap<Integer,msgHandler> handlers = new HashMap<Integer,msgHandler>();
+	private HashMap<Integer,ArrayList<Msg>> bufferPool = new HashMap<Integer,ArrayList<Msg>>();
+	private HashMap<Integer,Msg> conversationPool = new HashMap<Integer,Msg>();
+	
+	public HashMap<Integer,Msg> getMessageInfo(){
+		return conversationPool;
+	}
 	
 	private msgHandler handler;
 	public void setHandler(Integer userid, msgHandler activityHandler){
 		 handlers.put(userid, activityHandler);
+	}
+	
+	private ConversationHandler conversatoionHandler;
+	public void setConversationHandler(ConversationHandler handler){
+		this.conversatoionHandler = handler;
 	}
 	
 	public void clearHandler(Integer userid){
@@ -64,17 +75,22 @@ public class MessageCenter extends Service {
 	
 	public void deliverMessages(){
 		for(Integer userid : bufferPool.keySet()){
+			ArrayList<Msg> buffer = bufferPool.get(userid);
+			conversationPool.put(userid,buffer.get(buffer.size()-1));
 			msgHandler handler = handlers.get(userid);
 			if(handler == null){
-				
+				//count and add notifiation
 			}
 			else{
 				Message msg = new Message();
 				msg.what = 1;
-				msg.obj = bufferPool.get(userid);
+				msg.obj = buffer;
 				handler.sendMessage(msg);
 			}
+			
 		}
+		this.conversatoionHandler.sendEmptyMessage(1);
+		bufferPool.clear();
 	}
 	
 	private void bufferMessage(Msg message){

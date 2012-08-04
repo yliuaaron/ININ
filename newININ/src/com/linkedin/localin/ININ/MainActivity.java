@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.http.HttpResponse;
@@ -35,15 +36,19 @@ import com.google.code.linkedinapi.schema.Person;
 
 
 import com.linkedin.localin.ININ.R;
+import com.linkedin.localin.ININ.ChatActivity.msgHandler;
+import com.linkedin.localin.ININ.MessageCenter.SampleBinder;
 
 import eu.erikw.PullToRefreshListView;
 import eu.erikw.PullToRefreshListView.OnRefreshListener;
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationListener;
@@ -51,6 +56,9 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
 import android.os.StrictMode;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -70,6 +78,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
@@ -173,8 +182,11 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         	bestLocation = locationManager.getLastKnownLocation(locationProvider);
         Intent intent = new Intent(this, LoginActivity.class);
         startActivityForResult(intent, CODE_LOGIN);
+        
+        conversationAdapter = new ConversationListAdapter(this,conversationPeople,conversationMsg);
+        
     }
-
+    ConversationListAdapter conversationAdapter;
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_main, menu);
@@ -192,6 +204,34 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         return super.onOptionsItemSelected(item);
     }
 
+    
+    public ConversationHandler conversationHandler = new ConversationHandler();
+	
+    
+	public class ConversationHandler extends Handler{
+        @Override
+        public void handleMessage(Message msg){
+        	Log.d("Main","Conversation Uploading called");
+            switch(msg.what){
+            case 1:
+            	//Toast.makeText(mContext, "works", Toast.LENGTH_LONG).show();
+            	conversationPeople.clear();
+            	conversationMsg.clear();
+            	HashMap<Integer, Msg> map = mMessageCenter.getMessageInfo();
+            	for(Integer memberId: map.keySet()){
+            		Log.d("conversation",memberId+" "+map.get(memberId).getMessage());
+            		conversationPeople.add(getContact(memberId));
+            		conversationMsg.add(map.get(memberId));
+            	}
+            	conversationAdapter.notifyDataSetChanged();
+            	//adapter.notifyDataSetChanged();
+            	break;
+            //Implement this
+          }
+      }
+	}   
+    
+    
 
     @Override
     public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
@@ -213,7 +253,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
     	public Fragment list = new ListFragment();
-    	
+    	public Fragment conversation = new ConversationFragment();
     	
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -225,6 +265,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         	Fragment fragment;
         	if(i==0){
         		return list;
+        	}
+        	if(i == 1)
+        	{
+        		return conversation;
         	}
         	else{
         		fragment = new DummySectionFragment();
@@ -238,7 +282,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         @Override
         public int getCount() {
-            return 3;
+            return 2;
         }
 
         @Override
@@ -246,13 +290,65 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             switch (position) {
                 case 0: return getString(R.string.title_section1).toUpperCase();
                 case 1: return getString(R.string.title_section2).toUpperCase();
-                case 2: return getString(R.string.title_section3).toUpperCase();
+                
             }
             return null;
         }
     }
 
-    
+    public ArrayList<Contact> conversationPeople = new ArrayList<Contact>();
+    public ArrayList<Msg> conversationMsg = new ArrayList<Msg>();
+    public class ConversationFragment extends Fragment 
+    {
+        public ConversationFragment() {
+        }
+
+        public static final String ARG_SECTION_NUMBER = "section_number";
+
+        public void updateList(){
+        	
+        }
+        
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                Bundle savedInstanceState) {
+        	ListView conversationList;
+        	View v = inflater.inflate(R.layout.conversationlayout, null);
+        	conversationList = (ListView) v.findViewById(R.id.listView1);
+        	conversationList.setAdapter(conversationAdapter);
+//            listView.setOnRefreshListener(new OnRefreshListener() {
+//    			
+//    			@Override
+//    			public void onRefresh() 
+//    			{
+//    				//TODO: here add filter
+//    				queryNearbyUsers(null);
+//    				listView.onRefreshComplete();
+//    				
+//    			}
+//    		});
+//            
+        	conversationList.setOnItemClickListener(new OnItemClickListener() {
+    			@Override
+    			public void onItemClick(AdapterView<?> parent, View view, int position, long id) 
+    			{
+    				Contact contact = (Contact)parent.getItemAtPosition(position);
+    				if(contact.getId().equals(currentUser.getId()))
+    					return;
+    				
+    				Intent intent = new Intent(mContext, ChatActivity.class);
+    				intent.putExtra("contact", contact);
+        			intent.putExtra("current", currentUserContact);
+        			startActivity(intent);
+    				//startActivityForResult(intent, CODE_PROFILE);
+    				
+    			}
+    		});
+            listView.requestFocus();
+            
+            return v;
+        }
+    }
     
     public class DummySectionFragment extends Fragment {
         public DummySectionFragment() {
@@ -297,23 +393,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     				//TODO: here add filter
     				queryNearbyUsers(null);
     				listView.onRefreshComplete();
-    				//Toast.makeText(mContext, "fuck you ", Toast.LENGTH_LONG).show();
-    				// Your code to refresh the list contents goes here
-
-    				// Make sure you call listView.onRefreshComplete()
-    				// when the loading is done. This can be done from here or any
-    				// other place, like on a broadcast receive from your loading
-    				// service or the onPostExecute of your AsyncTask.
-
-    				// For the sake of this sample, the code will pause here to
-    				// force a delay when invoking the refresh
-//    				listView.postDelayed(new Runnable() {
-//    					@Override
-//    					public void run() {
-//    						listView.onRefreshComplete();
-//    					}
-//    				}, 2000);
-//    				Toast.makeText(mContext, "fuck you ", Toast.LENGTH_LONG).show();
+    				
     			}
     		});
             
@@ -365,7 +445,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     							ProfileField.SITE_STANDARD_PROFILE_REQUEST_URL));
     			
     			String url = currentUser.getSiteStandardProfileRequest().getUrl();
-        		Long mid = Long.parseLong(Uri.parse(url).getQueryParameter("key"));
+        		int mid = Integer.parseInt(Uri.parse(url).getQueryParameter("key"));
     			
     			currentUserContact = new Contact(
     					mid, 
@@ -383,7 +463,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     		    Log.d("info", currentUser.getSiteStandardProfileRequest().getUrl());
     			
     			Log.d("info", currentUser.toString());
-    			
+    			MessageCenter.my_id = mid;
+    			Intent intent= new Intent(this, MessageCenter.class);
+    	    	boolean bindsuccess = bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    			Log.e("MainActivity", "the binding result is "+bindsuccess);
     			obtainLocation();
     		}
     	}
@@ -401,6 +484,12 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     			startActivity(intent);
     		}
     	}
+    }
+    
+    @Override
+    public void onDestroy(){
+    	this.unbindService(mConnection);
+    	super.onDestroy();
     }
     
     public void obtainLocation()
@@ -631,33 +720,62 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         mTask.execute((Void[]) null);    	
     }
     
+    private ArrayList<Contact> contacts = new ArrayList<Contact>();
+    public Contact getContact(int userId){
+    	for(Contact contact : contacts){
+    		if((int)contact.getMemberId()==userId){
+    			return contact;
+    		}
+    	}
+    	return null;
+    }
+    ContactListAdapter adapter = null;
     private void loadNearbyUsers(JSONArray array)
     {
-    	ArrayList<Contact> contacts = new ArrayList<Contact>();
+    	//contacts;
     	for(int i = 0; i < array.size(); i++)
     	{
     		JSONObject user = (JSONObject)array.get(i);
-    		Contact contact = new Contact(
-		              Long.parseLong((String)user.get("memberId")),
-		              (String)user.get("id"),
-		              (String)user.get("firstName"),
-		              (String)user.get("lastName"),
-		              (String)user.get("headline"),
-		              (String)user.get("region"),
-		              (String)user.get("industry"),
-		              (String)user.get("pictureUrl"),
-		              Double.parseDouble((String)user.get("lat")),
-		              Double.parseDouble((String)user.get("lng")),
-		              (String)user.get("timestamp"));
-    		contact.setDistance(distanceByLatLng(bestLocation.getLatitude(), bestLocation.getLongitude(),
-    							contact.getLatitude(), contact.getLongitude()));
-    		contacts.add(contact);		            		  
+    		int memberId = Integer.parseInt((String)user.get("memberId"));
+    		Contact contact = getContact(memberId);
+    		if(contact==null){
+    			contact = new Contact(
+  		              Long.parseLong((String)user.get("memberId")),
+  		              (String)user.get("id"),
+  		              (String)user.get("firstName"),
+  		              (String)user.get("lastName"),
+  		              (String)user.get("headline"),
+  		              (String)user.get("region"),
+  		              (String)user.get("industry"),
+  		              (String)user.get("pictureUrl"),
+  		              Double.parseDouble((String)user.get("lat")),
+  		              Double.parseDouble((String)user.get("lng")),
+  		              (String)user.get("timestamp"));
+    			contact.setDistance(distanceByLatLng(bestLocation.getLatitude(), bestLocation.getLongitude(),
+      							contact.getLatitude(), contact.getLongitude()));
+    			contacts.add(contact);		            		  
+    		}
+    		else{
+    			Double lat = Double.parseDouble((String)user.get("lat"));
+	            Double lon = Double.parseDouble((String)user.get("lng"));
+	            String timestamp = (String)user.get("timestamp");
+	            contact.setLat(lat);
+	            contact.setLon(lon);
+	            contact.setTime(timestamp);
+	            contact.setDistance(distanceByLatLng(bestLocation.getLatitude(), bestLocation.getLongitude(),
+							contact.getLatitude(), contact.getLongitude()));
+    		}
+    		
     	}
     	Collections.sort(contacts);
-    	ContactListAdapter adapter = new ContactListAdapter(this, contacts);
     	
-    	listView.setAdapter(adapter);
-    	
+    	if(adapter == null){
+    		ContactListAdapter adapter = new ContactListAdapter(this, contacts);
+    		listView.setAdapter(adapter);
+    	}
+    	else{
+    		adapter.notifyDataSetChanged();
+    	}
         btnFilter = (Button)mSectionsPagerAdapter.list.getView().findViewById(R.id.btnFilter);
         editFilter = (EditText)mSectionsPagerAdapter.list.getView().findViewById(R.id.editFilter);
     	btnFilter.setOnClickListener(new OnClickListener() 
@@ -770,4 +888,23 @@ public int updateDB(int userid, Timestamp timestamp, String lastSentence){
 //    	double rad_dist = Math.atan(-t5 / Math.sqrt(-t5 * t5 + 1)) + 2 * Math.atan(1);
 //    	return rad_dist * 3437.74677 * 1.1508;
     }
+    
+    MessageCenter mMessageCenter;
+    boolean mBound = false;
+    
+    private ServiceConnection mConnection = new ServiceConnection(){
+    	@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			SampleBinder binder = (SampleBinder) service;
+			mMessageCenter = binder.getService();
+			mMessageCenter.setConversationHandler(conversationHandler);
+			mBound = true;
+		}
+
+    	@Override
+		public void onServiceDisconnected(ComponentName name) {
+			mBound = false;
+		}
+    	
+    };
 }
