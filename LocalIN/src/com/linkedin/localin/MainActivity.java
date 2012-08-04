@@ -1,4 +1,6 @@
 package com.linkedin.localin;
+import eu.erikw.*;
+import eu.erikw.PullToRefreshListView.OnRefreshListener;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -36,6 +38,7 @@ import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
 
+
 import com.google.code.linkedinapi.client.LinkedInApiClient;
 import com.google.code.linkedinapi.client.LinkedInApiClientFactory;
 import com.google.code.linkedinapi.client.enumeration.ProfileField;
@@ -69,7 +72,8 @@ public class MainActivity extends Activity
 	private long obtainLocationStartTime;
 	
 	private boolean locationUpdated = false;
-
+	private PullToRefreshListView listView;
+	
     @Override
     public void onCreate(Bundle savedInstanceState) 
     {
@@ -123,7 +127,31 @@ public class MainActivity extends Activity
 //        ListView listView = (ListView)findViewById(R.id.listView1);
 //        ContactListAdapter adapter = new ContactListAdapter(this, contacts);
 //        listView.setAdapter(adapter);
-        
+        listView = (PullToRefreshListView) findViewById(R.id.listView1);
+        listView.setOnRefreshListener(new OnRefreshListener() {
+			
+			@Override
+			public void onRefresh() {
+				queryNearbyUsers();
+				listView.onRefreshComplete();
+				// Your code to refresh the list contents goes here
+
+				// Make sure you call listView.onRefreshComplete()
+				// when the loading is done. This can be done from here or any
+				// other place, like on a broadcast receive from your loading
+				// service or the onPostExecute of your AsyncTask.
+
+				// For the sake of this sample, the code will pause here to
+				// force a delay when invoking the refresh
+//				listView.postDelayed(new Runnable() {
+//					@Override
+//					public void run() {
+//						listView.onRefreshComplete();
+//					}
+//				}, 2000);
+//				Toast.makeText(mContext, "fuck you ", Toast.LENGTH_LONG).show();
+			}
+		});
     }
 
     @Override
@@ -392,8 +420,7 @@ public class MainActivity extends Activity
     		contacts.add(contact);		            		  
     	}
     	
-    	ListView listView = (ListView)findViewById(R.id.listView1);
-        ContactListAdapter adapter = new ContactListAdapter(this, contacts);
+    	ContactListAdapter adapter = new ContactListAdapter(this, contacts);
         listView.setAdapter(adapter);
     }
     
