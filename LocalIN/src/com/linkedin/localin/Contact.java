@@ -7,7 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-public class Contact implements Serializable
+public class Contact implements Serializable, Comparable<Contact>
 {
 	/**
 	 * 
@@ -114,6 +114,15 @@ public class Contact implements Serializable
 	public Date getLastUpdate()
 	{
 		return _lastUpdate;
+	}
+
+	@Override
+	public int compareTo(Contact another) 
+	{
+		if(_distance < another.getDistance())
+			return -1;
+		else
+			return 1;
 	}
 
 }

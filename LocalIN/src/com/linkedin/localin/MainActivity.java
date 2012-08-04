@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -342,7 +343,8 @@ public class MainActivity extends Activity
     		List<NameValuePair> params = new ArrayList<NameValuePair>();
     		String url = currentUser.getSiteStandardProfileRequest().getUrl();
     		Long mid = Long.parseLong(Uri.parse(url).getQueryParameter("key"));
-    		params.add(new BasicNameValuePair("id", "" + mid));
+    		params.add(new BasicNameValuePair("mid", "" + mid));
+    		params.add(new BasicNameValuePair("id", "" + currentUser.getId()));
     		params.add(new BasicNameValuePair("first", currentUser.getFirstName()));
     		params.add(new BasicNameValuePair("last", currentUser.getLastName()));
     		params.add(new BasicNameValuePair("headline", currentUser.getHeadline()));
@@ -429,6 +431,7 @@ public class MainActivity extends Activity
     							contact.getLatitude(), contact.getLongitude()));
     		contacts.add(contact);		            		  
     	}
+    	Collections.sort(contacts);
     	
     	ContactListAdapter adapter = new ContactListAdapter(this, contacts);
         listView.setAdapter(adapter);
@@ -441,6 +444,7 @@ public class MainActivity extends Activity
 				Contact contact = (Contact)parent.getItemAtPosition(position);
 				Intent intent = new Intent(context, ProfileActivity.class);
 				intent.putExtra("user", contact);
+				intent.putExtra("token", accessToken);
 				startActivity(intent);
 				
 			}
