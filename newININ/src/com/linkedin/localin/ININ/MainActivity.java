@@ -27,6 +27,8 @@ import com.google.code.linkedinapi.client.oauth.LinkedInOAuthService;
 import com.google.code.linkedinapi.client.oauth.LinkedInOAuthServiceFactory;
 import com.google.code.linkedinapi.schema.Person;
 
+
+
 import com.linkedin.localin.ININ.R;
 
 import eu.erikw.PullToRefreshListView;
@@ -55,7 +57,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.TextView;
+import android.widget.AdapterView.OnItemClickListener;
 
 public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
 	private static final int TWO_MINUTES = 1000 * 60 * 2;
@@ -67,10 +71,15 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     public static final String OAUTH_CALLBACK_HOST = "callback";
     public static final String OAUTH_CALLBACK_URL = OAUTH_CALLBACK_SCHEME + "://" + OAUTH_CALLBACK_HOST;
     
+    Context mContext;
+    
     public static final LinkedInOAuthService oAuthService = LinkedInOAuthServiceFactory.getInstance().createLinkedInOAuthService(CONSUMER_KEY, CONSUMER_SECRET);
     public static final LinkedInApiClientFactory factory = LinkedInApiClientFactory.newInstance(CONSUMER_KEY, CONSUMER_SECRET);
     LinkedInApiClient client;
     LinkedInAccessToken accessToken;
+    
+    private static final int CODE_LOGIN = 1;
+	private static final int CODE_PROFILE = 2;
     
     private Person currentUser;
     private HttpClient httpclient = new DefaultHttpClient();
@@ -95,7 +104,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
      * The {@link ViewPager} that will host the section contents.
      */
     ViewPager mViewPager;
-
+    private Contact currentUserContact;
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
     	if (android.os.Build.VERSION.SDK_INT > 9) 
@@ -118,6 +128,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
+        mContext = this;
+        
         // When swiping between different sections, select the corresponding tab.
         // We can also use ActionBar.Tab#select() to do this if we have a reference to the
         // Tab.
@@ -143,7 +155,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         if(bestLocation == null)
         	bestLocation = locationManager.getLastKnownLocation(locationProvider);
         Intent intent = new Intent(this, LoginActivity.class);
-        startActivityForResult(intent, 0);
+        startActivityForResult(intent, CODE_LOGIN);
     }
 
     @Override
@@ -258,6 +270,24 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     			}
     		});
             
+            listView.setOnItemClickListener(new OnItemClickListener() {
+
+    			@Override
+    			public void onItemClick(AdapterView<?> parent, View view, int position, long id) 
+    			{
+    				Contact contact = (Contact)parent.getItemAtPosition(position);
+    				if(contact.getId().equals(currentUser.getId()))
+    					return;
+    				
+    				Intent intent = new Intent(mContext, ProfileActivity.class);
+    				intent.putExtra("user", contact);
+    				intent.putExtra("token", accessToken);
+    				//startActivity(intent);
+    				startActivityForResult(intent, CODE_PROFILE);
+    				
+    			}
+    		});
+            
             return v;
         }
     }
@@ -267,7 +297,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     {
     	super.onActivityResult(requestCode, resultCode, data);
     	Log.d("info", "on activity result!");
-    	if(requestCode == 0)
+    	if(requestCode == CODE_LOGIN)
     	{
     		if(resultCode == RESULT_OK)
     		{
@@ -284,14 +314,42 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     							ProfileField.PICTURE_URL,
     							ProfileField.PUBLIC_PROFILE_URL,
     							ProfileField.SITE_STANDARD_PROFILE_REQUEST_URL));
-    			//TextView textView = (TextView) findViewById(R.id.textView2);
-    			//textView.setText("Hello " + currentUser.getFirstName() + "!");
+    			
+    			String url = currentUser.getSiteStandardProfileRequest().getUrl();
+        		Long mid = Long.parseLong(Uri.parse(url).getQueryParameter("key"));
+    			
+    			currentUserContact = new Contact(
+    					mid, 
+    					currentUser.getId(), 
+    					currentUser.getFirstName(), 
+    					currentUser.getLastName(),
+    					currentUser.getHeadline(), 
+    					currentUser.getLocation().getName(),
+    					currentUser.getIndustry(),
+    					currentUser.getPictureUrl(),
+    					0.0, 0.0, "");
+//    			TextView textView = (TextView) findViewById(R.id.textView2);
+//    			textView.setText("Hello " + currentUser.getFirstName() + "!");
     			Log.d("info", currentUser.getPublicProfileUrl());
     		    Log.d("info", currentUser.getSiteStandardProfileRequest().getUrl());
     			
     			Log.d("info", currentUser.toString());
     			
     			obtainLocation();
+    		}
+    	}
+    	else if (requestCode == CODE_PROFILE)
+    	{
+    		if(resultCode == RESULT_OK)
+    		{
+    			Log.d("info", "return to chat!");
+    			//tabHost.setCurrentTab(1);
+    			
+    			Contact contact = (Contact)data.getSerializableExtra("contact");
+    			Intent intent = new Intent(this, ChatActivity.class);
+    			intent.putExtra("contact", contact);
+    			intent.putExtra("current", currentUserContact);
+    			startActivity(intent);
     		}
     	}
     }
@@ -527,15 +585,17 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     	{
     		JSONObject user = (JSONObject)array.get(i);
     		Contact contact = new Contact(
-    				              Long.parseLong((String)user.get("memberId")),
-    				              (String)user.get("firstName"),
-    				              (String)user.get("lastName"),
-    				              (String)user.get("headline"),
-    				              (String)user.get("region"),
-    				              (String)user.get("industry"),
-    				              (String)user.get("pictureUrl"),
-    				              Double.parseDouble((String)user.get("lat")),
-    				              Double.parseDouble((String)user.get("lng")));
+		              Long.parseLong((String)user.get("memberId")),
+		              (String)user.get("id"),
+		              (String)user.get("firstName"),
+		              (String)user.get("lastName"),
+		              (String)user.get("headline"),
+		              (String)user.get("region"),
+		              (String)user.get("industry"),
+		              (String)user.get("pictureUrl"),
+		              Double.parseDouble((String)user.get("lat")),
+		              Double.parseDouble((String)user.get("lng")),
+		              (String)user.get("timestamp"));
     		contact.setDistance(distanceByLatLng(bestLocation.getLatitude(), bestLocation.getLongitude(),
     							contact.getLatitude(), contact.getLongitude()));
     		contacts.add(contact);		            		  

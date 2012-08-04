@@ -111,6 +111,12 @@ public class Contact implements Serializable, Comparable<Contact>
 	{
 		return _lng;
 	}
+	public void setLatLng(double lat, double lng)
+	{
+		this._lat = lat;
+		this._lng = lng;
+		this._lastUpdate = new Date();
+	}
 	public Date getLastUpdate()
 	{
 		return _lastUpdate;

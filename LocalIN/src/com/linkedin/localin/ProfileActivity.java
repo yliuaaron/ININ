@@ -11,6 +11,7 @@ import com.google.code.linkedinapi.schema.Person;
 
 import android.os.Bundle;
 import android.app.Activity;
+import android.content.Intent;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -36,6 +37,8 @@ public class ProfileActivity extends Activity
 	
 	LinkedInApiClient client;
 	LinkedInAccessToken token;
+	
+	Contact contact;
 
     @Override
     public void onCreate(Bundle savedInstanceState) 
@@ -58,7 +61,9 @@ public class ProfileActivity extends Activity
 			@Override
 			public void onClick(View v) 
 			{
-				setResult(RESULT_OK);
+				Intent data = new Intent();
+				data.putExtra("contact", contact);
+				setResult(RESULT_OK, data);
 				finish();
 				
 			}
@@ -66,22 +71,22 @@ public class ProfileActivity extends Activity
         
         imageLoader = new ImageLoader(this.getApplicationContext());
         
-        Contact user = (Contact)this.getIntent().getSerializableExtra("user");
+        contact = (Contact)this.getIntent().getSerializableExtra("user");
         token = (LinkedInAccessToken)this.getIntent().getSerializableExtra("token");
         client = MainActivity.factory.createLinkedInApiClient(token);
         
-        nameText.setText(user.getName());
-        headlineText.setText(user.getHeadline());
-        infoText.setText(user.getRegion() + " | " + user.getIndustry());
+        nameText.setText(contact.getName());
+        headlineText.setText(contact.getHeadline());
+        infoText.setText(contact.getRegion() + " | " + contact.getIndustry());
         Date now = new Date();
-        Long diff = now.getTime() - user.getLastUpdate().getTime();
+        Long diff = now.getTime() - contact.getLastUpdate().getTime();
         int minutes = (int)(diff / 1000 / 60) + 180;
-        double distance = Math.round(user.getDistance() * 100.0) / 100.0; 
+        double distance = Math.round(contact.getDistance() * 100.0) / 100.0; 
         locText.setText(distance + " miles | " + minutes + " mins ago");
         
-        imageLoader.DisplayImage(user.getPicUrl(), profileImage);
+        imageLoader.DisplayImage(contact.getPicUrl(), profileImage);
         
-        Person person = client.getProfileById(user.getId(), EnumSet.of(
+        Person person = client.getProfileById(contact.getId(), EnumSet.of(
 		        			ProfileField.NUM_CONNECTIONS,
 		        			ProfileField.DISTANCE,
 		        		    ProfileField.RELATION_TO_VIEWER_RELATED_CONNECTIONS,
