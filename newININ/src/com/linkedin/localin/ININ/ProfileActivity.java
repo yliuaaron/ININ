@@ -11,6 +11,7 @@ import com.google.code.linkedinapi.schema.Person;
 
 import android.os.Bundle;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import android.view.Menu;
@@ -56,24 +57,35 @@ public class ProfileActivity extends Activity
         commonText = (TextView) findViewById(R.id.textView6);
         
         btnChat = (Button) findViewById(R.id.button1);
+        
+        final Intent receive = this.getIntent();
+        contact = (Contact)receive.getSerializableExtra("user");
+        token = (LinkedInAccessToken)this.getIntent().getSerializableExtra("token");
+        client = MainActivity.factory.createLinkedInApiClient(token);
+        
+        final Context context = this;
         btnChat.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) 
 			{
-				Intent data = new Intent();
-				data.putExtra("contact", contact);
-				setResult(RESULT_OK, data);
-				finish();
+				Intent intent = new Intent(context, ChatActivity.class);
+				
+				Contact currentUserContact = (Contact) receive.getSerializableExtra("current");
+    			intent.putExtra("contact", contact);
+    			intent.putExtra("current", currentUserContact);
+    			startActivity(intent);
+				
+				
+				//setResult(RESULT_OK, data);
+				//finish();
 				
 			}
 		});
         
         imageLoader = new ImageLoader(this.getApplicationContext());
         
-        contact = (Contact)this.getIntent().getSerializableExtra("user");
-        token = (LinkedInAccessToken)this.getIntent().getSerializableExtra("token");
-        client = MainActivity.factory.createLinkedInApiClient(token);
+        
         
         nameText.setText(contact.getName());
         headlineText.setText(contact.getHeadline());
