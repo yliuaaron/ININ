@@ -13,7 +13,10 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -24,6 +27,10 @@ public class ProfileActivity extends Activity
 	private TextView infoText;
 	private ImageView profileImage;
 	private TextView locText;
+	private TextView connText;
+	private TextView commonText;
+	
+	private Button btnChat;
 	
 	private ImageLoader imageLoader;
 	
@@ -42,6 +49,20 @@ public class ProfileActivity extends Activity
         infoText = (TextView) findViewById(R.id.textView3);
         profileImage = (ImageView)findViewById(R.id.profile_image);
         locText = (TextView) findViewById(R.id.textView4);
+        connText = (TextView) findViewById(R.id.textView5);
+        commonText = (TextView) findViewById(R.id.textView6);
+        
+        btnChat = (Button) findViewById(R.id.button1);
+        btnChat.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) 
+			{
+				setResult(RESULT_OK);
+				finish();
+				
+			}
+		});
         
         imageLoader = new ImageLoader(this.getApplicationContext());
         
@@ -67,6 +88,9 @@ public class ProfileActivity extends Activity
 		        			ProfileField.RELATION_TO_VIEWER,
 		        			ProfileField.EDUCATIONS
 		        		));
+        
+        connText.setText("" + person.getNumConnections());
+        commonText.setText("" + person.getRelationToViewer().getRelatedConnections().getTotal());
         
         Log.d("info", "numConnection: " + person.getNumConnections());
         Log.d("info", "distance: " + person.getDistance());

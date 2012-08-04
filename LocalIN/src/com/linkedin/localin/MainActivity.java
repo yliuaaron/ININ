@@ -57,6 +57,9 @@ public class MainActivity extends Activity
 	private static final int TWO_MINUTES = 1000 * 60 * 2;
 	private static final int LOCATION_WAIT_TIME = 1000 * 10;
 	
+	private static final int CODE_LOGIN = 1;
+	private static final int CODE_PROFILE = 2;
+	
 	public static final String CONSUMER_KEY = "rkqpdhrfmlbn";
     public static final String CONSUMER_SECRET = "U5ceoqmJfqrTTH93";
     public static final String OAUTH_CALLBACK_SCHEME = "x-oauthflow-linkedin";
@@ -104,7 +107,7 @@ public class MainActivity extends Activity
         
         
         Intent intent = new Intent(this, LoginActivity.class);
-        startActivityForResult(intent, 0);
+        startActivityForResult(intent, CODE_LOGIN);
         
         TabHost tabHost = (TabHost)findViewById(R.id.tabhost);
         tabHost.setup();
@@ -174,7 +177,7 @@ public class MainActivity extends Activity
     {
     	super.onActivityResult(requestCode, resultCode, data);
     	Log.d("info", "on activity result!");
-    	if(requestCode == 0)
+    	if(requestCode == CODE_LOGIN)
     	{
     		if(resultCode == RESULT_OK)
     		{
@@ -199,6 +202,13 @@ public class MainActivity extends Activity
     			Log.d("info", currentUser.toString());
     			
     			obtainLocation();
+    		}
+    	}
+    	else if (requestCode == CODE_PROFILE)
+    	{
+    		if(resultCode == RESULT_OK)
+    		{
+    			Log.d("info", "return to chat!");
     		}
     	}
     }
@@ -442,10 +452,14 @@ public class MainActivity extends Activity
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) 
 			{
 				Contact contact = (Contact)parent.getItemAtPosition(position);
+				if(contact.getId().equals(currentUser.getId()))
+					return;
+				
 				Intent intent = new Intent(context, ProfileActivity.class);
 				intent.putExtra("user", contact);
 				intent.putExtra("token", accessToken);
-				startActivity(intent);
+				//startActivity(intent);
+				startActivityForResult(intent, CODE_PROFILE);
 				
 			}
 		});
