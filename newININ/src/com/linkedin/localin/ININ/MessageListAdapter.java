@@ -82,5 +82,7 @@ public class MessageListAdapter extends BaseAdapter
 		
 		return vi;
 	}
+	
+	
 
 }
