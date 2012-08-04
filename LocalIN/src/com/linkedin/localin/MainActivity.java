@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -33,7 +34,11 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.Window;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
@@ -52,6 +57,9 @@ public class MainActivity extends Activity
 {
 	private static final int TWO_MINUTES = 1000 * 60 * 2;
 	private static final int LOCATION_WAIT_TIME = 1000 * 10;
+	
+	private static final int CODE_LOGIN = 1;
+	private static final int CODE_PROFILE = 2;
 	
 	public static final String CONSUMER_KEY = "rkqpdhrfmlbn";
     public static final String CONSUMER_SECRET = "U5ceoqmJfqrTTH93";
@@ -72,6 +80,8 @@ public class MainActivity extends Activity
 	private LocationManager locationManager;
 	private long obtainLocationStartTime;
 	
+	private Context context;
+	
 	private boolean locationUpdated = false;
 	private PullToRefreshListView listView;
 	
@@ -88,6 +98,8 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
+        context = this;
+        
         // load last-time's location from application memory
         // bestLocation = ...
         locationManager = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
@@ -96,7 +108,7 @@ public class MainActivity extends Activity
         
         
         Intent intent = new Intent(this, LoginActivity.class);
-        startActivityForResult(intent, 0);
+        startActivityForResult(intent, CODE_LOGIN);
         
         TabHost tabHost = (TabHost)findViewById(R.id.tabhost);
         tabHost.setup();
@@ -166,7 +178,7 @@ public class MainActivity extends Activity
     {
     	super.onActivityResult(requestCode, resultCode, data);
     	Log.d("info", "on activity result!");
-    	if(requestCode == 0)
+    	if(requestCode == CODE_LOGIN)
     	{
     		if(resultCode == RESULT_OK)
     		{
@@ -191,6 +203,13 @@ public class MainActivity extends Activity
     			Log.d("info", currentUser.toString());
     			
     			obtainLocation();
+    		}
+    	}
+    	else if (requestCode == CODE_PROFILE)
+    	{
+    		if(resultCode == RESULT_OK)
+    		{
+    			Log.d("info", "return to chat!");
     		}
     	}
     }
@@ -335,7 +354,8 @@ public class MainActivity extends Activity
     		List<NameValuePair> params = new ArrayList<NameValuePair>();
     		String url = currentUser.getSiteStandardProfileRequest().getUrl();
     		Long mid = Long.parseLong(Uri.parse(url).getQueryParameter("key"));
-    		params.add(new BasicNameValuePair("id", "" + mid));
+    		params.add(new BasicNameValuePair("mid", "" + mid));
+    		params.add(new BasicNameValuePair("id", "" + currentUser.getId()));
     		params.add(new BasicNameValuePair("first", currentUser.getFirstName()));
     		params.add(new BasicNameValuePair("last", currentUser.getLastName()));
     		params.add(new BasicNameValuePair("headline", currentUser.getHeadline()));
@@ -433,6 +453,7 @@ public class MainActivity extends Activity
     		JSONObject user = (JSONObject)array.get(i);
     		Contact contact = new Contact(
     				              Long.parseLong((String)user.get("memberId")),
+    				              (String)user.get("id"),
     				              (String)user.get("firstName"),
     				              (String)user.get("lastName"),
     				              (String)user.get("headline"),
@@ -440,15 +461,39 @@ public class MainActivity extends Activity
     				              (String)user.get("industry"),
     				              (String)user.get("pictureUrl"),
     				              Double.parseDouble((String)user.get("lat")),
-    				              Double.parseDouble((String)user.get("lng")));
+    				              Double.parseDouble((String)user.get("lng")),
+    				              (String)user.get("timestamp"));
     		contact.setDistance(distanceByLatLng(bestLocation.getLatitude(), bestLocation.getLongitude(),
     							contact.getLatitude(), contact.getLongitude()));
     		contacts.add(contact);		            		  
     	}
+    	Collections.sort(contacts);
     	
     	ContactListAdapter adapter = new ContactListAdapter(this, contacts);
+<<<<<<< HEAD
     	
     	listView.setAdapter(adapter);
+=======
+        listView.setAdapter(adapter);
+        
+        listView.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) 
+			{
+				Contact contact = (Contact)parent.getItemAtPosition(position);
+				if(contact.getId().equals(currentUser.getId()))
+					return;
+				
+				Intent intent = new Intent(context, ProfileActivity.class);
+				intent.putExtra("user", contact);
+				intent.putExtra("token", accessToken);
+				//startActivity(intent);
+				startActivityForResult(intent, CODE_PROFILE);
+				
+			}
+		});
+>>>>>>> 90b0b0917374a680fcf4801f02a29c778bce5899
     }
     
     public static double distanceByLatLng(double lat1, double lng1, double lat2, double lng2)
