@@ -4,7 +4,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class Message 
+public class Msg 
 {
 	private long _id;
 	private long _from;
@@ -13,7 +13,7 @@ public class Message
 	private Date _time;
 	private int _retrieved;
 	
-	public Message(long id, long from, long to, String message, String time, int retrieved)
+	public Msg(long id, long from, long to, String message, String time, int retrieved)
 	{
 		_id = id;
 		_from = from;

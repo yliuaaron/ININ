@@ -24,8 +24,9 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-public class ProfileActivity extends Activity 
+public class ProfileActivity extends Activity implements OnClickListener
 {
 	private TextView nameText;
 	private TextView headlineText;
@@ -36,6 +37,7 @@ public class ProfileActivity extends Activity
 	private TextView commonText;
 	
 	private Button btnChat;
+	private Button btnConnect;
 	
 	private ImageLoader imageLoader;
 	
@@ -44,6 +46,7 @@ public class ProfileActivity extends Activity
 	String invitationHeader;
 	
 	Contact contact;
+	Person addInfo;
 
     @Override
     public void onCreate(Bundle savedInstanceState) 
@@ -61,6 +64,7 @@ public class ProfileActivity extends Activity
         commonText = (TextView) findViewById(R.id.textView6);
         
         btnChat = (Button) findViewById(R.id.button1);
+        btnConnect = (Button) findViewById(R.id.button2);
         
         final Intent receive = this.getIntent();
         contact = (Contact)receive.getSerializableExtra("user");
@@ -102,7 +106,7 @@ public class ProfileActivity extends Activity
         
         imageLoader.DisplayImage(contact.getPicUrl(), profileImage);
         
-        Person person = client.getProfileById(contact.getId(), EnumSet.of(
+        addInfo = client.getProfileById(contact.getId(), EnumSet.of(
         				    ProfileField.API_STANDARD_PROFILE_REQUEST_HEADERS,
 		        			ProfileField.NUM_CONNECTIONS,
 		        			ProfileField.DISTANCE,
@@ -111,7 +115,7 @@ public class ProfileActivity extends Activity
 		        			ProfileField.EDUCATIONS
 		        		));
         
-        List<HttpHeader> headers = person.getApiStandardProfileRequest().getHeaders().getHttpHeaderList();
+        List<HttpHeader> headers = addInfo.getApiStandardProfileRequest().getHeaders().getHttpHeaderList();
         for(int i = 0; i < headers.size(); i++)
         {
         	if(headers.get(i).getName().equals(ApplicationConstants.AUTH_HEADER_NAME))
@@ -123,17 +127,37 @@ public class ProfileActivity extends Activity
         
         Log.d("info", invitationHeader);
         
-        connText.setText("" + person.getNumConnections());
-        commonText.setText("" + person.getRelationToViewer().getRelatedConnections().getTotal());
+        connText.setText("" + addInfo.getNumConnections());
+        commonText.setText("" + addInfo.getRelationToViewer().getRelatedConnections().getTotal());
         
-        Log.d("info", "numConnection: " + person.getNumConnections());
-        Log.d("info", "distance: " + person.getDistance());
-        Log.d("info", "common: " + person.getRelationToViewer().getRelatedConnections().getTotal());
+        Log.d("info", "numConnection: " + addInfo.getNumConnections());
+        Log.d("info", "distance: " + addInfo.getDistance());
+        Log.d("info", "common: " + addInfo.getRelationToViewer().getRelatedConnections().getTotal());
+        
+        if(addInfo.getDistance() == 1)
+        	btnConnect.setEnabled(false);
+        else
+        {
+        	btnConnect.setOnClickListener(this);
+        }
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu) 
+    {
         getMenuInflater().inflate(R.menu.activity_profile, menu);
         return true;
     }
+
+	@Override
+	public void onClick(View v) 
+	{
+		client.sendInviteById(contact.getId(), 
+				"Invitation to Connect",
+				"Please join my professional network on LinkedIn.",
+				invitationHeader);
+		Log.d("info", "invitation sent!");
+		Toast.makeText(this, "Invitation Send!", Toast.LENGTH_LONG).show();
+		
+	}
 }
