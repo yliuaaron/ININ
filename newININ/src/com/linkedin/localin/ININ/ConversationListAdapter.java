@@ -1,5 +1,7 @@
 package com.linkedin.localin.ININ;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import com.example.androidhive.ImageLoader;
@@ -72,7 +74,8 @@ public class ConversationListAdapter extends BaseAdapter
 		
 		name.setText(contact.getName());
 		msgPlace.setText(msg.getMessage());
-		timePlace.setText(msg.getTime().toString());
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		timePlace.setText(df.format(msg.getTime()));
 		
 		//distance.setText("" + contact.getLatitude() + ", " + contact.getLongitude());
 		
