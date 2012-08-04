@@ -89,6 +89,8 @@ public class MessageCenter extends Service {
 			}
 			
 		}
+		
+		
 		this.conversatoionHandler.sendEmptyMessage(1);
 		bufferPool.clear();
 	}

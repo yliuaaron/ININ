@@ -35,6 +35,8 @@ public class ProfileActivity extends Activity implements OnClickListener
 	private TextView locText;
 	private TextView connText;
 	private TextView commonText;
+	private TextView sumText;
+	private TextView skillText;
 	
 	private Button btnChat;
 	private Button btnConnect;
@@ -62,6 +64,8 @@ public class ProfileActivity extends Activity implements OnClickListener
         locText = (TextView) findViewById(R.id.textView4);
         connText = (TextView) findViewById(R.id.textView5);
         commonText = (TextView) findViewById(R.id.textView6);
+        sumText = (TextView)findViewById(R.id.textView10);
+        skillText=(TextView)findViewById(R.id.textView12);
         
         btnChat = (Button) findViewById(R.id.button1);
         btnConnect = (Button) findViewById(R.id.button2);
@@ -107,6 +111,8 @@ public class ProfileActivity extends Activity implements OnClickListener
         imageLoader.DisplayImage(contact.getPicUrl(), profileImage);
         
         addInfo = client.getProfileById(contact.getId(), EnumSet.of(
+        		            ProfileField.SUMMARY,
+        		            ProfileField.SKILLS,
         				    ProfileField.API_STANDARD_PROFILE_REQUEST_HEADERS,
 		        			ProfileField.NUM_CONNECTIONS,
 		        			ProfileField.DISTANCE,
@@ -127,8 +133,17 @@ public class ProfileActivity extends Activity implements OnClickListener
         
         Log.d("info", invitationHeader);
         
+        String skillStr = "";
+        for(int i = 0; i < addInfo.getSkills().getSkillList().size(); i++)
+        	skillStr += addInfo.getSkills().getSkillList().get(i).getSkill().getName() + ", ";
+        skillStr = skillStr.trim();
+        skillStr = skillStr.substring(0, skillStr.length() - 1);
+        
+        
         connText.setText("" + addInfo.getNumConnections());
         commonText.setText("" + addInfo.getRelationToViewer().getRelatedConnections().getTotal());
+        sumText.setText(addInfo.getSummary());
+        skillText.setText(skillStr);
         
         Log.d("info", "numConnection: " + addInfo.getNumConnections());
         Log.d("info", "distance: " + addInfo.getDistance());

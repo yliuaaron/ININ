@@ -60,6 +60,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.StrictMode;
+import android.os.Vibrator;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -224,6 +225,9 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             		conversationMsg.add(map.get(memberId));
             	}
             	conversationAdapter.notifyDataSetChanged();
+            	Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);  
+                  
+                vibrator.vibrate(1000);
             	//adapter.notifyDataSetChanged();
             	break;
             //Implement this
