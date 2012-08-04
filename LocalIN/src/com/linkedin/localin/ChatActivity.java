@@ -49,7 +49,7 @@ public class ChatActivity extends Activity implements OnClickListener
 		String message = contentText.getText().toString();
 		if(message.length() != 0)
 		{
-			
+			 
 		}
 		
 	}
