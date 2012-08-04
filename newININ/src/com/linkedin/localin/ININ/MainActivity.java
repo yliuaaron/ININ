@@ -22,6 +22,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
+
 import com.google.code.linkedinapi.client.LinkedInApiClient;
 import com.google.code.linkedinapi.client.LinkedInApiClientFactory;
 import com.google.code.linkedinapi.client.enumeration.ProfileField;
@@ -43,6 +44,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -642,14 +644,52 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     	listView.setAdapter(adapter);
     }
     
-    public int delete(int userid){
+    
+public int updateDB(int userid, Timestamp timestamp, String lastSentence){
+    	
+    	//step one, store the sensor information and get a row id, uri should just be the normal uri
+    	ContentValues values = new ContentValues();
+    	
+    	values.put(ConversationProvider.OTHERID, userid);
+    	values.put(ConversationProvider.LASTSENTENCE, lastSentence);
+    	values.put(ConversationProvider.TIMESTAMP, timestamp.getTime());
+    	ContentResolver resolver = getContentResolver();
+    	
+    	
+    	String base = ConversationProvider.RECORD_URI.toString();
+    	Uri uri = Uri.parse(base+"/"+userid);
+    	int count = resolver.update(uri, values,null,null);
+    	return count;
+    }
+    
+    public ArrayList<ContentValues> queryDB() throws Throwable{
+        ContentResolver contentResolver = this.getContentResolver();
+        //Uri uri = Uri.parse("content://com.ljq.provider.personprovider/person");
+        Uri uri = ConversationProvider.RECORD_URI;
+        Cursor cursor = contentResolver.query(uri, null, null, null, null);
+        ArrayList<ContentValues> values = new ArrayList<ContentValues>();
+        while(cursor.moveToNext()){
+            ContentValues bundle = new ContentValues();
+            int userid = cursor.getInt(0);
+            long timestamp = cursor.getLong(1);
+            String lastMsg = cursor.getString(2);
+            bundle.put(ConversationProvider.OTHERID, userid);
+            bundle.put(ConversationProvider.TIMESTAMP, timestamp);
+            bundle.put(ConversationProvider.LASTSENTENCE, lastMsg);
+            values.add(bundle);
+        }
+        cursor.close();
+        return values;
+    }
+    
+    public int deleteDB(int userid){
     	String base = ConversationProvider.RECORD_URI.toString();
     	Uri uri = Uri.parse(base+"/"+userid);
     	ContentResolver contentResolver = this.getContentResolver();
         return contentResolver.delete(uri, null, null);
     }
     
-    public int store(int userid, Timestamp timestamp, String lastSentence){
+    public int storeDB(int userid, Timestamp timestamp, String lastSentence){
     	Uri mRecordUri;
     	
     	//step one, store the sensor information and get a row id, uri should just be the normal uri

@@ -29,7 +29,7 @@ public class ConversationProvider extends ContentProvider {
 	private static String SQL_CREATE_RECORDS = "CREATE TABLE " +
 		    TABLE_CONVERSATION +                       // Table's name
 		    " (" +                           // The columns in the table
-		    OTHERID + " INTEGER PRIMARY KEY," +
+		    OTHERID + " INTEGER," +
 		    TIMESTAMP + " TIMESTAMP," + 
 		    LASTSENTENCE + " text) ";
 	
@@ -157,11 +157,24 @@ public class ConversationProvider extends ContentProvider {
 		return cursor;
 	}
 
-	@Override
-	public int update(Uri arg0, ContentValues arg1, String arg2, String[] arg3) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
 	
+	@Override
+    public int update(Uri uri, ContentValues values, String selection,
+            String[] selectionArgs) {
+        int count = 0;
+        int uriType = mURIMatcher.match(uri);
+        switch (uriType) {
+       
+        case RECORD_ID:
+            
+            long personid = ContentUris.parseId(uri);
+            String where = this.OTHERID + "=" + personid;// 
+           
+            count = db.update(this.TABLE_CONVERSATION, values, where, selectionArgs);
+            break;
+        default:
+            throw new IllegalArgumentException("Unknown URI " + uri);
+        }
+        return count;
+    }
 }

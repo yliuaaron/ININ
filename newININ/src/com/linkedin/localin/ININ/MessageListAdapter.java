@@ -1,5 +1,7 @@
 package com.linkedin.localin.ININ;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import com.example.androidhive.ImageLoader;
@@ -66,12 +68,21 @@ public class MessageListAdapter extends BaseAdapter
 		}
 		
 		TextView msgText = (TextView) vi.findViewById(R.id.message);
+		TextView timeText = (TextView) vi.findViewById(R.id.time);
 		ImageView headImage = (ImageView) vi.findViewById(R.id.chat_image);
+		msgText.setText(message.getMessage());
 		
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		timeText.setText(df.format(message.getTime()));
 		
+		if(message.getFromUserId() == owner.getMemberId())
+			imageLoader.DisplayImage(owner.getPicUrl(), headImage);
+		else
+			imageLoader.DisplayImage(receiver.getPicUrl(), headImage);
 		
-		// TODO Auto-generated method stub
-		return null;
+		return vi;
 	}
+	
+	
 
 }
