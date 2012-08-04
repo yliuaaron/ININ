@@ -147,8 +147,8 @@ public class ChatActivity extends Activity implements OnClickListener
         protected void onPostExecute(JSONArray jsonArray) {
 			try{
 				if(jsonArray!=null){
-					for(int i =0;i<jsonArray.length();i++){
-						JSONObject obj = jsonArray.getJSONObject(i);
+					for(int i =jsonArray.length();i>0;i--){
+						JSONObject obj = jsonArray.getJSONObject(i-1);
 						Message m = new Message(obj.getLong("id"),obj.getLong("fromUser") ,obj.getLong("toUser"), obj.getString("message"), obj.getString("time"), 0);
 						messages.add(m);
 					}
