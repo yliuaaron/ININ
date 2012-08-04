@@ -24,6 +24,9 @@ public class MsgListAdapter extends BaseAdapter
 	private Contact receiver;
 	private static LayoutInflater inflater = null;
 	private ImageLoader imageLoader;
+	
+	private static final int TYPE_FROM_ME = 0;
+	private static final int TYPE_TO_ME = 1;
 
 	public MsgListAdapter(Activity a, ArrayList<Msg> d, Contact o, Contact r)
 	{
@@ -52,16 +55,31 @@ public class MsgListAdapter extends BaseAdapter
 	{
 		return data.get(position).getId();
 	}
+	
+	@Override
+    public int getItemViewType(int position) 
+	{
+		if(data.get(position).getFromUserId() == owner.getMemberId())
+			return TYPE_FROM_ME;
+		else
+			return TYPE_TO_ME;
+    }
+	@Override
+    public int getViewTypeCount() 
+	{
+        return TYPE_TO_ME + 1;
+    }
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) 
 	{
 		Msg message = data.get(position);
+		int type = getItemViewType(position);
 		
 		View vi = convertView;
 		if(convertView == null)
 		{
-			if(message.getFromUserId() == owner.getMemberId())
+			if(type == TYPE_FROM_ME)
 				vi = inflater.inflate(R.layout.chat_row_right, null);
 			else
 				vi = inflater.inflate(R.layout.chat_row_left, null);

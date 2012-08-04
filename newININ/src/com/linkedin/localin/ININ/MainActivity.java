@@ -64,9 +64,14 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class MainActivity extends FragmentActivity implements ActionBar.TabListener {
@@ -99,6 +104,9 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 	
 	private boolean locationUpdated = false;
 	private PullToRefreshListView listView;
+	private Button btnFilter;
+	private EditText editFilter;
+	private String userFilter = "";
 	
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide fragments for each of the
@@ -158,6 +166,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                             .setText(mSectionsPagerAdapter.getPageTitle(i))
                             .setTabListener(this));
         }
+        mViewPager.requestFocus();
         
         locationManager = (LocationManager)this.getSystemService(Context.LOCATION_SERVICE);
         if(bestLocation == null)
@@ -208,8 +217,6 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     	
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
-            
-            
             
         }
 
@@ -265,7 +272,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     /**
      * A dummy fragment representing a section of the app, but that simply displays dummy text.
      */
-    public class ListFragment extends Fragment {
+    public class ListFragment extends Fragment 
+    {
         public ListFragment() {
         }
 
@@ -284,8 +292,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
             listView.setOnRefreshListener(new OnRefreshListener() {
     			
     			@Override
-    			public void onRefresh() {
-    				queryNearbyUsers();
+    			public void onRefresh() 
+    			{
+    				//TODO: here add filter
+    				queryNearbyUsers(null);
     				listView.onRefreshComplete();
     				//Toast.makeText(mContext, "fuck you ", Toast.LENGTH_LONG).show();
     				// Your code to refresh the list contents goes here
@@ -325,6 +335,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     				
     			}
     		});
+            listView.requestFocus();
             
             return v;
         }
@@ -476,7 +487,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 						logCurrentLocation();
 						locationUpdated = true;
 						
-						queryNearbyUsers();
+						queryNearbyUsers(null);
 					}
 					
 				}
@@ -560,7 +571,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     	}
     }
     
-    private void queryNearbyUsers()
+    private void queryNearbyUsers(final String filterStr)
     {
     	AsyncTask<Void, Void, JSONArray> mTask = new AsyncTask<Void, Void, JSONArray>() {
     		
@@ -578,7 +589,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
                 // issues
                 // Note: since "handler" parameter is null in authenticate(), the callback to AuthenticatorActivity
                 // will not occur
-            	HttpGet queryget = new HttpGet("http://aaronplex.net/project/localin/q.php?lat=" + bestLocation.getLatitude() + "&lng=" + bestLocation.getLongitude());
+            	String url = "http://aaronplex.net/project/localin/q.php?lat=" + bestLocation.getLatitude() + "&lng=" + bestLocation.getLongitude();
+            	if(filterStr != null)
+            		url = url + "&q=" + filterStr;
+            	HttpGet queryget = new HttpGet(url);
             	JSONArray array = null;
             	try
             	{
@@ -643,6 +657,31 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     	ContactListAdapter adapter = new ContactListAdapter(this, contacts);
     	
     	listView.setAdapter(adapter);
+    	
+        btnFilter = (Button)mSectionsPagerAdapter.list.getView().findViewById(R.id.btnFilter);
+        editFilter = (EditText)mSectionsPagerAdapter.list.getView().findViewById(R.id.editFilter);
+    	btnFilter.setOnClickListener(new OnClickListener() 
+    	{
+			
+			@Override
+			public void onClick(View v) 
+			{
+				String filter = editFilter.getText().toString();
+				if(filter.length() != 0)
+				{
+					String filterStr = filter.replaceAll("\\s+", "+");
+					queryNearbyUsers(filterStr);
+					Toast.makeText(mContext, "Filtered by '" + filter + "'", Toast.LENGTH_LONG).show();
+					
+					InputMethodManager inputManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE); 
+					inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
+                               InputMethodManager.HIDE_NOT_ALWAYS);
+					
+					listView.requestFocus();
+				}
+				
+			}
+		});
     }
     
     

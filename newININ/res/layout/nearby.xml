@@ -2,18 +2,50 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    >
+    android:orientation="vertical" >
 
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"
+        android:orientation="vertical" >
+
+        <eu.erikw.PullToRefreshListView
+            android:id="@+id/listView1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dip"
+            android:layout_marginTop="5dip"
+            android:layout_weight="1"
+            android:overScrollMode="always" >
+        </eu.erikw.PullToRefreshListView>
+
+    </LinearLayout>
     
-
-    <eu.erikw.PullToRefreshListView
-        android:id="@+id/listView1"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="5dip"
-        android:layout_marginTop="5dip"
-        android:layout_weight="1"
-        android:overScrollMode="always" />
+        android:layout_gravity="bottom" >
+
+        <EditText
+            android:id="@+id/editFilter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10" >
+
+            <requestFocus />
+        </EditText>
+
+        <Button
+            android:id="@+id/btnFilter"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Filter" />
+        
+    </LinearLayout>
 
 </LinearLayout>
 
