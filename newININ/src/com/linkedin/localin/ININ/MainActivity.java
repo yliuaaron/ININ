@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -195,17 +196,29 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
      * sections of the app.
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
-
+    	public Fragment list = new ListFragment();
+    	
+    	
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
+            
+            
+            
         }
 
         @Override
         public Fragment getItem(int i) {
-            Fragment fragment = new ListFragment();
-            Bundle args = new Bundle();
-            args.putInt(ListFragment.ARG_SECTION_NUMBER, i + 1);
-            fragment.setArguments(args);
+        	Fragment fragment;
+        	if(i==0){
+        		return list;
+        	}
+        	else{
+        		fragment = new DummySectionFragment();
+        	}
+        	
+        	Bundle args = new Bundle();
+    		args.putInt(ListFragment.ARG_SECTION_NUMBER, i + 1);
+    		fragment.setArguments(args);
             return fragment;
         }
 
@@ -227,7 +240,20 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
     
     
-    
+    public class DummySectionFragment extends Fragment {
+        public DummySectionFragment() {
+        }
+
+        public static final String ARG_SECTION_NUMBER = "section_number";
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                Bundle savedInstanceState) {
+        	TextView tv = new TextView(inflater.getContext());
+        	tv.setText("fuck you");
+            return tv;
+        }
+    }
     
     /**
      * A dummy fragment representing a section of the app, but that simply displays dummy text.
@@ -238,6 +264,10 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         public static final String ARG_SECTION_NUMBER = "section_number";
 
+        public void updateList(){
+        	
+        }
+        
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
@@ -248,7 +278,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     			
     			@Override
     			public void onRefresh() {
-    				//queryNearbyUsers();
+    				queryNearbyUsers();
     				listView.onRefreshComplete();
     				//Toast.makeText(mContext, "fuck you ", Toast.LENGTH_LONG).show();
     				// Your code to refresh the list contents goes here
@@ -601,7 +631,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     							contact.getLatitude(), contact.getLongitude()));
     		contacts.add(contact);		            		  
     	}
-    	
+    	Collections.sort(contacts);
     	ContactListAdapter adapter = new ContactListAdapter(this, contacts);
     	
     	listView.setAdapter(adapter);
