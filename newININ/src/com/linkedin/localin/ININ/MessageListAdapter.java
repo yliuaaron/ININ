@@ -66,12 +66,17 @@ public class MessageListAdapter extends BaseAdapter
 		}
 		
 		TextView msgText = (TextView) vi.findViewById(R.id.message);
+		TextView timeText = (TextView) vi.findViewById(R.id.time);
 		ImageView headImage = (ImageView) vi.findViewById(R.id.chat_image);
+		msgText.setText(message.getMessage());
+		timeText.setText(message.getTime().toString());
 		
+		if(message.getFromUserId() == owner.getMemberId())
+			imageLoader.DisplayImage(owner.getPicUrl(), headImage);
+		else
+			imageLoader.DisplayImage(receiver.getPicUrl(), headImage);
 		
-		
-		// TODO Auto-generated method stub
-		return null;
+		return vi;
 	}
 
 }
