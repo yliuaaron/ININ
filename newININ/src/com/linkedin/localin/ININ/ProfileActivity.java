@@ -1,5 +1,7 @@
 package com.linkedin.localin.ININ;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
@@ -9,8 +11,10 @@ import com.google.code.linkedinapi.client.LinkedInApiClient;
 import com.google.code.linkedinapi.client.constant.ApplicationConstants;
 import com.google.code.linkedinapi.client.enumeration.ProfileField;
 import com.google.code.linkedinapi.client.oauth.LinkedInAccessToken;
+import com.google.code.linkedinapi.schema.Education;
 import com.google.code.linkedinapi.schema.HttpHeader;
 import com.google.code.linkedinapi.schema.Person;
+import com.google.code.linkedinapi.schema.Position;
 
 import android.os.Bundle;
 import android.app.Activity;
@@ -37,6 +41,8 @@ public class ProfileActivity extends Activity implements OnClickListener
 	private TextView commonText;
 	private TextView sumText;
 	private TextView skillText;
+	private TextView expText;
+	private TextView eduText;
 	
 	private Button btnChat;
 	private Button btnConnect;
@@ -66,6 +72,8 @@ public class ProfileActivity extends Activity implements OnClickListener
         commonText = (TextView) findViewById(R.id.textView6);
         sumText = (TextView)findViewById(R.id.textView10);
         skillText=(TextView)findViewById(R.id.textView12);
+        expText = (TextView)findViewById(R.id.textView14);
+        eduText = (TextView)findViewById(R.id.textView16);
         
         btnChat = (Button) findViewById(R.id.button1);
         btnConnect = (Button) findViewById(R.id.button2);
@@ -113,6 +121,7 @@ public class ProfileActivity extends Activity implements OnClickListener
         addInfo = client.getProfileById(contact.getId(), EnumSet.of(
         		            ProfileField.SUMMARY,
         		            ProfileField.SKILLS,
+        		            ProfileField.POSITIONS,
         				    ProfileField.API_STANDARD_PROFILE_REQUEST_HEADERS,
 		        			ProfileField.NUM_CONNECTIONS,
 		        			ProfileField.DISTANCE,
@@ -144,6 +153,26 @@ public class ProfileActivity extends Activity implements OnClickListener
         commonText.setText("" + addInfo.getRelationToViewer().getRelatedConnections().getTotal());
         sumText.setText(addInfo.getSummary());
         skillText.setText(skillStr);
+        
+        if(addInfo.getPositions().getTotal() > 0)
+        {
+        	Position pos = addInfo.getPositions().getPositionList().get(0);
+        	
+        	String posStr = pos.getTitle() + "\n\n" + pos.getCompany().getName() + "\n" + pos.getStartDate().getYear() + "/" + pos.getStartDate().getMonth() + " - ";
+        	if(pos.getEndDate() == null) posStr += "Present";
+        	else posStr += pos.getEndDate().getYear() + "/" + pos.getEndDate().getMonth();
+        	if(pos.getSummary() != null) posStr += "\n\n" + pos.getSummary();
+        	expText.setText(posStr);
+        }
+        
+        if(addInfo.getEducations().getTotal() > 0)
+        {
+        	Education edu = addInfo.getEducations().getEducationList().get(0);
+        	String eduStr = edu.getSchoolName() + "\n" + edu.getStartDate().getYear() + " - ";
+        	if(edu.getEndDate() == null) eduStr += "Present";
+        	else eduStr += edu.getEndDate().getYear();
+        	eduText.setText(eduStr);
+        }
         
         Log.d("info", "numConnection: " + addInfo.getNumConnections());
         Log.d("info", "distance: " + addInfo.getDistance());
