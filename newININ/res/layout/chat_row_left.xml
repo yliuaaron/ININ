@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:padding="5dip" >
     
     <LinearLayout android:id="@+id/chat_thumbnail"
         android:layout_width="wrap_content"
@@ -24,6 +25,7 @@
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/chat_thumbnail"
         android:layout_toRightOf="@+id/chat_thumbnail"
+        android:textSize="15dip"
         android:text="message" >
     </TextView>
     
@@ -33,7 +35,8 @@
         android:layout_below="@+id/message"
         android:layout_toRightOf="@+id/chat_thumbnail"
         android:layout_marginTop="1dip"
-        android:textColor="#343434"
+        android:textColor="#787878"
+        android:textSize="10dip"
         android:text="time" >
     </TextView>
 

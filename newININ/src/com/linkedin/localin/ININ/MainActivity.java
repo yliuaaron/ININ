@@ -282,6 +282,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     				Intent intent = new Intent(mContext, ProfileActivity.class);
     				intent.putExtra("user", contact);
     				intent.putExtra("token", accessToken);
+    				intent.putExtra("current", currentUserContact);
     				//startActivity(intent);
     				startActivityForResult(intent, CODE_PROFILE);
     				

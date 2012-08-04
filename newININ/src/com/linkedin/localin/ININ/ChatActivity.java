@@ -1,5 +1,7 @@
 package com.linkedin.localin.ININ;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -12,6 +14,7 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -22,7 +25,7 @@ public class ChatActivity extends Activity implements OnClickListener
 	
 	private TextView titleText;
 	private Button btnSend;
-	private TextView contentText;
+	private EditText contentText;
 	private ListView chatList;
 	
 	private ArrayList<Message> messages;
@@ -41,6 +44,7 @@ public class ChatActivity extends Activity implements OnClickListener
         titleText = (TextView)findViewById(R.id.textView1);
         btnSend = (Button)findViewById(R.id.button1);
         chatList = (ListView) findViewById(R.id.listView1);
+        contentText = (EditText) findViewById(R.id.editText1);
         
         titleText.setText("Chat with " + contact.getName());
         
@@ -61,9 +65,11 @@ public class ChatActivity extends Activity implements OnClickListener
 	public void onClick(View v) 
 	{
 		String message = contentText.getText().toString();
+		contentText.setText("");
 		if(message.length() != 0)
 		{
-			Message m = new Message(1, currentUser.getMemberId(), contact.getMemberId(), message, (new Date()).toString(), 0);
+			DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			Message m = new Message(1, currentUser.getMemberId(), contact.getMemberId(), message, df.format(new Date()), 0);
 			messages.add(m);
 			
 			adapter.notifyDataSetChanged();
