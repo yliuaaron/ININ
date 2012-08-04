@@ -74,7 +74,7 @@ public class MessageCenter extends Service {
 	}
 	
 	private void bufferMessage(Msg message){
-		Integer from = (int) message.getFromUserId();
+		Integer from = (int) message.getFromUserId(); //52502731
 		ArrayList<Msg> buffer =  bufferPool.get(from);
 		if(buffer == null){
 			buffer = new ArrayList<Msg>();
