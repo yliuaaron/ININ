@@ -2,6 +2,8 @@ package com.linkedin.localin.ININ;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -30,12 +32,15 @@ import com.google.code.linkedinapi.schema.Person;
 
 
 
+
 import com.linkedin.localin.ININ.R;
 
 import eu.erikw.PullToRefreshListView;
 import eu.erikw.PullToRefreshListView.OnRefreshListener;
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
@@ -635,6 +640,30 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     	ContactListAdapter adapter = new ContactListAdapter(this, contacts);
     	
     	listView.setAdapter(adapter);
+    }
+    
+    public int delete(int userid){
+    	String base = ConversationProvider.RECORD_URI.toString();
+    	Uri uri = Uri.parse(base+"/"+userid);
+    	ContentResolver contentResolver = this.getContentResolver();
+        return contentResolver.delete(uri, null, null);
+    }
+    
+    public int store(int userid, Timestamp timestamp, String lastSentence){
+    	Uri mRecordUri;
+    	
+    	//step one, store the sensor information and get a row id, uri should just be the normal uri
+    	ContentValues values = new ContentValues();
+    	
+    	values.put(ConversationProvider.OTHERID, userid);
+    	values.put(ConversationProvider.LASTSENTENCE, lastSentence);
+    	values.put(ConversationProvider.TIMESTAMP, timestamp.getTime());
+    	ContentResolver resolver = getContentResolver();
+    	mRecordUri = resolver.insert(ConversationProvider.RECORD_URI, values);
+    	
+    	//should be the id
+    	final String row_id = mRecordUri.getLastPathSegment();
+    	return Integer.parseInt(row_id);       
     }
     
     public static double distanceByLatLng(double lat1, double lng1, double lat2, double lng2)

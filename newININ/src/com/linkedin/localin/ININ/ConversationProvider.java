@@ -13,48 +13,35 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.util.Log;
 
-public class RecordProvider extends ContentProvider {
+public class ConversationProvider extends ContentProvider {
 	
 	
 	
 	
 	//Schema Design
-	protected static final String DBNAME = "recorddb";
-	public static final String TABLE_RECORD = "record";
-	public static final String ID = "_id";
-	public static final String BSSID = "bssid";
-	public static final String RSSI = "rssi";
-	public static final String APID = "_id";
-	public static final String ID_RECORD = "record_id";
+	protected static final String DBNAME = "localdb";
+	public static final String TABLE_CONVERSATION = "conversation";
+	public static final String OTHERID = "otherid";
 	public static final String TIMESTAMP = "timestamp";
-	public static final String APLIST = "aplist";
+	public static final String LASTSENTENCE = "lastsentance";
 	
 	
 	private static String SQL_CREATE_RECORDS = "CREATE TABLE " +
-		    TABLE_RECORD +                       // Table's name
+		    TABLE_CONVERSATION +                       // Table's name
 		    " (" +                           // The columns in the table
-		    ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+		    OTHERID + " INTEGER PRIMARY KEY," +
 		    TIMESTAMP + " TIMESTAMP," + 
-		    APLIST + " text ";
+		    LASTSENTENCE + " text) ";
 	
-	static{
-		for(String sensor: SamplingService.SENSORLIST.keySet()){
-			SQL_CREATE_RECORDS += ","+sensor+"x real";
-			SQL_CREATE_RECORDS += ","+sensor+"y real";
-			SQL_CREATE_RECORDS += ","+sensor+"z real";
-		}
-		SQL_CREATE_RECORDS += ")";
-	}
 	
 	
 	//Uri
-	private static final String AUTHORITY = "com.linkedin.itdev.orion.provider";
+	private static final String AUTHORITY = "com.linkedin.localin.ININ";
 	public static final int RECORDS = 1;
 	public static final int RECORD_ID = 2;
 	private static final String RECORD_BASE_PATH = "record";
-	private static final String APLIST_PATH = "aplist";
+	
 	public static final Uri RECORD_URI = Uri.parse("content://"+AUTHORITY+"/"+ RECORD_BASE_PATH);
-	public static final Uri AP_URI = Uri.parse("content://"+AUTHORITY+"/"+RECORD_BASE_PATH+"/"+APLIST_PATH);
 	
 	private static final UriMatcher mURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 	static {
@@ -74,7 +61,7 @@ public class RecordProvider extends ContentProvider {
 		public void onCreate(SQLiteDatabase db) {
 			// TODO Auto-generated method stub
 			db.execSQL(SQL_CREATE_RECORDS);
-			Log.v(SamplingService.DEBUG_TAG, "Sql sentent of creating records is "+SQL_CREATE_RECORDS);
+			Log.v("DEBUG", "Sql sentent of creating records is "+SQL_CREATE_RECORDS);
 		}
 
 		@Override
@@ -96,9 +83,23 @@ public class RecordProvider extends ContentProvider {
 	
 	//Operation 
 	@Override
-	public int delete(Uri arg0, String arg1, String[] arg2) {
+	public int delete(Uri uri, String arg1, String[] arg2) {
 		// TODO Auto-generated method stub
-		return 0;
+		int uriType = mURIMatcher.match(uri);
+		
+		switch(uriType){
+			case RECORD_ID:
+				SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
+				queryBuilder.setTables(TABLE_CONVERSATION);
+				queryBuilder.appendWhere(ConversationProvider.OTHERID + "=" + uri.getLastPathSegment());
+				if(db == null){
+					db = mainDatabase.getWritableDatabase();
+				}
+				int rowNum = db.delete(TABLE_CONVERSATION, arg1, arg2);
+				return rowNum;
+			default:
+				throw new IllegalArgumentException("Unknown URI " + uri);
+		}
 	}
 
 	@Override
@@ -120,7 +121,7 @@ public class RecordProvider extends ContentProvider {
 			if(db == null){
 				db = mainDatabase.getWritableDatabase();
 			}
-			long rowId = db.insert(TABLE_RECORD, ID, initialValues);
+			long rowId = db.insert(TABLE_CONVERSATION, OTHERID, initialValues);
 			if(rowId > 0){
 				Uri recordUri = ContentUris.withAppendedId(RECORD_URI, rowId);
 				getContext().getContentResolver().notifyChange(recordUri, null);
@@ -139,18 +140,18 @@ public class RecordProvider extends ContentProvider {
 			String sortOrder) {
 		// TODO Auto-generated method stub
 		SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
-		queryBuilder.setTables(TABLE_RECORD);
+		queryBuilder.setTables(TABLE_CONVERSATION);
 		
 		int uriType = mURIMatcher.match(uri);
 		switch(uriType){
 		case RECORDS:
 			break;
 		case RECORD_ID:
-			queryBuilder.appendWhere(RecordProvider.ID + "=" + uri.getLastPathSegment());
+			queryBuilder.appendWhere(ConversationProvider.OTHERID + "=" + uri.getLastPathSegment());
 		default:
 			throw new IllegalArgumentException("Unknown URI");
 		}
-		Log.e(SamplingService.DEBUG_TAG, "query triggered");
+		Log.e("DEBUG", "query triggered");
 		Cursor cursor = queryBuilder.query(mainDatabase.getReadableDatabase(), projection, selection, selectionArgs, null, null, sortOrder);
 		cursor.setNotificationUri(getContext().getContentResolver(), uri);
 		return cursor;
