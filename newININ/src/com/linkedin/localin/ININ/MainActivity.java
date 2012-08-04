@@ -526,7 +526,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     		List<NameValuePair> params = new ArrayList<NameValuePair>();
     		String url = currentUser.getSiteStandardProfileRequest().getUrl();
     		Long mid = Long.parseLong(Uri.parse(url).getQueryParameter("key"));
-    		params.add(new BasicNameValuePair("id", "" + mid));
+    		params.add(new BasicNameValuePair("mid", "" + mid));
+    		params.add(new BasicNameValuePair("id",""+currentUser.getId()));
     		params.add(new BasicNameValuePair("first", currentUser.getFirstName()));
     		params.add(new BasicNameValuePair("last", currentUser.getLastName()));
     		params.add(new BasicNameValuePair("headline", currentUser.getHeadline()));
