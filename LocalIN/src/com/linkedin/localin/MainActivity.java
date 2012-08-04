@@ -72,6 +72,7 @@ public class MainActivity extends Activity
     LinkedInAccessToken accessToken;
     
     private Person currentUser;
+    private Contact currentUserContact;
     private HttpClient httpclient = new DefaultHttpClient();
     
     private Location bestLocation;
@@ -83,6 +84,7 @@ public class MainActivity extends Activity
 	
 	private boolean locationUpdated = false;
 	private PullToRefreshListView listView;
+	private TabHost tabHost;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) 
@@ -109,7 +111,7 @@ public class MainActivity extends Activity
         Intent intent = new Intent(this, LoginActivity.class);
         startActivityForResult(intent, CODE_LOGIN);
         
-        TabHost tabHost = (TabHost)findViewById(R.id.tabhost);
+        tabHost = (TabHost)findViewById(R.id.tabhost);
         tabHost.setup();
         
         TabSpec tspec1 = tabHost.newTabSpec("First Tab");
@@ -194,6 +196,20 @@ public class MainActivity extends Activity
     							ProfileField.PICTURE_URL,
     							ProfileField.PUBLIC_PROFILE_URL,
     							ProfileField.SITE_STANDARD_PROFILE_REQUEST_URL));
+    			
+    			String url = currentUser.getSiteStandardProfileRequest().getUrl();
+        		Long mid = Long.parseLong(Uri.parse(url).getQueryParameter("key"));
+    			
+    			currentUserContact = new Contact(
+    					mid, 
+    					currentUser.getId(), 
+    					currentUser.getFirstName(), 
+    					currentUser.getLastName(),
+    					currentUser.getHeadline(), 
+    					currentUser.getLocation().getName(),
+    					currentUser.getIndustry(),
+    					currentUser.getPictureUrl(),
+    					0.0, 0.0, "");
     			TextView textView = (TextView) findViewById(R.id.textView2);
     			textView.setText("Hello " + currentUser.getFirstName() + "!");
     			Log.d("info", currentUser.getPublicProfileUrl());
@@ -209,6 +225,13 @@ public class MainActivity extends Activity
     		if(resultCode == RESULT_OK)
     		{
     			Log.d("info", "return to chat!");
+    			tabHost.setCurrentTab(1);
+    			
+    			Contact contact = (Contact)data.getSerializableExtra("contact");
+    			Intent intent = new Intent(this, ChatActivity.class);
+    			intent.putExtra("contact", contact);
+    			intent.putExtra("current", currentUserContact);
+    			startActivity(intent);
     		}
     	}
     }
@@ -302,6 +325,8 @@ public class MainActivity extends Activity
 					{
 						logCurrentLocation();
 						locationUpdated = true;
+						
+						currentUserContact.setLatLng(bestLocation.getLatitude(), bestLocation.getLongitude());
 						
 						queryNearbyUsers();
 					}
