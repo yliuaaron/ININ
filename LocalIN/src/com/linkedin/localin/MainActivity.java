@@ -30,7 +30,11 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.Window;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
@@ -68,6 +72,8 @@ public class MainActivity extends Activity
 	private LocationManager locationManager;
 	private long obtainLocationStartTime;
 	
+	private Context context;
+	
 	private boolean locationUpdated = false;
 
     @Override
@@ -82,6 +88,8 @@ public class MainActivity extends Activity
     	
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        
+        context = this;
         
         // load last-time's location from application memory
         // bestLocation = ...
@@ -379,6 +387,7 @@ public class MainActivity extends Activity
     		JSONObject user = (JSONObject)array.get(i);
     		Contact contact = new Contact(
     				              Long.parseLong((String)user.get("memberId")),
+    				              (String)user.get("id"),
     				              (String)user.get("firstName"),
     				              (String)user.get("lastName"),
     				              (String)user.get("headline"),
@@ -386,7 +395,8 @@ public class MainActivity extends Activity
     				              (String)user.get("industry"),
     				              (String)user.get("pictureUrl"),
     				              Double.parseDouble((String)user.get("lat")),
-    				              Double.parseDouble((String)user.get("lng")));
+    				              Double.parseDouble((String)user.get("lng")),
+    				              (String)user.get("timestamp"));
     		contact.setDistance(distanceByLatLng(bestLocation.getLatitude(), bestLocation.getLongitude(),
     							contact.getLatitude(), contact.getLongitude()));
     		contacts.add(contact);		            		  
@@ -395,6 +405,19 @@ public class MainActivity extends Activity
     	ListView listView = (ListView)findViewById(R.id.listView1);
         ContactListAdapter adapter = new ContactListAdapter(this, contacts);
         listView.setAdapter(adapter);
+        
+        listView.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) 
+			{
+				Contact contact = (Contact)parent.getItemAtPosition(position);
+				Intent intent = new Intent(context, ProfileActivity.class);
+				intent.putExtra("user", contact);
+				startActivity(intent);
+				
+			}
+		});
     }
     
     public static double distanceByLatLng(double lat1, double lng1, double lat2, double lng2)
