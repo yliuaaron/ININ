@@ -44,6 +44,10 @@ public class MessageCenter extends Service {
 		 handlers.put(userid, activityHandler);
 	}
 	
+	public void clearHandler(Integer userid){
+		handlers.remove(userid);
+	}
+	
 	/*=========================== Service Backbone Part ===========================*/
     private final IBinder mBinder = new SampleBinder();
     

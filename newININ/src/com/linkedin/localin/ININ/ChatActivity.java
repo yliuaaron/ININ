@@ -98,6 +98,7 @@ public class ChatActivity extends Activity implements OnClickListener
 
     	@Override
 		public void onServiceDisconnected(ComponentName name) {
+    		mMessageCenter.clearHandler((int)contact.getMemberId());
 			mBound = false;
 		}
     	
@@ -188,6 +189,7 @@ public class ChatActivity extends Activity implements OnClickListener
         MessageCenter.my_id = (int)currentUser.getMemberId();
         dHandler = new msgHandler();
         Intent intent= new Intent(this, MessageCenter.class);
+        
     	boolean bindsuccess = bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
         
     }
