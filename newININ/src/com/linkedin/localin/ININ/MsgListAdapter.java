@@ -16,16 +16,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 
-public class MessageListAdapter extends BaseAdapter 
+public class MsgListAdapter extends BaseAdapter 
 {
 	private Activity activity;
-	private ArrayList<Message> data;
+	private ArrayList<Msg> data;
 	private Contact owner;
 	private Contact receiver;
 	private static LayoutInflater inflater = null;
 	private ImageLoader imageLoader;
 
-	public MessageListAdapter(Activity a, ArrayList<Message> d, Contact o, Contact r)
+	public MsgListAdapter(Activity a, ArrayList<Msg> d, Contact o, Contact r)
 	{
 		activity = a;
 		data = d;
@@ -56,7 +56,7 @@ public class MessageListAdapter extends BaseAdapter
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) 
 	{
-		Message message = data.get(position);
+		Msg message = data.get(position);
 		
 		View vi = convertView;
 		if(convertView == null)

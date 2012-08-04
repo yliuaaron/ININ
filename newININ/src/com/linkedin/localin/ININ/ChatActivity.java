@@ -23,13 +23,21 @@ import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.linkedin.localin.ININ.MessageCenter.SampleBinder;
+
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.util.Log;
 import android.view.Menu;
@@ -39,6 +47,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class ChatActivity extends Activity implements OnClickListener
 {
@@ -50,62 +59,48 @@ public class ChatActivity extends Activity implements OnClickListener
 	private EditText contentText;
 	private ListView chatList;
 	
-	private ArrayList<Message> messages;
-	private MessageListAdapter adapter;
+	private ArrayList<Msg> messages;
+	private MsgListAdapter adapter;
+	
+	Context mContext;
 	
 	private HttpClient httpclient = new DefaultHttpClient();
 
-	TimerTask fetchTask = new TimerTask(){
+	public msgHandler dHandler;
+	
+	public class msgHandler extends Handler{
 
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-			HttpClient client = new DefaultHttpClient();
-		       
-	        HttpGet mget = new HttpGet("http://aaronplex.net/project/localin/retrieve.php?to="+contact.getMemberId());
-			String messageid = null;
-			try
-			{
-				HttpResponse response = client.execute(mget);
-				if(response.getStatusLine().getStatusCode() == 200)
-				{
-					BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-	    			StringBuilder sb = new StringBuilder();
-	    			String line;
-	    			while((line = br.readLine()) != null)
-	    			{
-	    				sb.append(line);
-	    				//Log.d("info", line);
-	    			}
-	    			br.close();
-	    			JSONArray jsonArray = new JSONArray(sb.toString());
-	    			
-	    			//DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	    			if(jsonArray.length()>0){
-		    			for(int i =0;i<jsonArray.length();i++){
-		    				JSONObject obj = jsonArray.getJSONObject(i);
-		    				Message m = new Message(obj.getLong("id"),obj.getLong("fromUser") ,obj.getLong("toUser"), obj.getString("message"), obj.getString("time"), 0);
-		    				messages.add(m);
-		    			}
-		    			handler.post(new Runnable() {
-							@Override
-							public void run() {
-								logLastMessage(messages.get(messages.size()-1));
-								adapter.notifyDataSetChanged();
-							}
-						});
-	    			}
-	    			Log.d("info", sb.toString());
-	    			//messageid = sb.toString().trim();
-				}
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-			}	
+        @Override
+        public void handleMessage(Message msg){
+
+            switch(msg.what){
+            case 1:
+            	Toast.makeText(mContext, "works", Toast.LENGTH_LONG).show();
+            //Implement this
+          }
+      }
+	}   
+	
+	MessageCenter mMessageCenter;
+	boolean mBound = false;
+	
+	private ServiceConnection mConnection = new ServiceConnection(){
+    	@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			SampleBinder binder = (SampleBinder) service;
+			mMessageCenter = binder.getService();
+			mMessageCenter.setHandler((int)contact.getMemberId(), dHandler);
+			mBound = true;
+		}
+
+    	@Override
+		public void onServiceDisconnected(ComponentName name) {
+			mBound = false;
 		}
     	
     };
+	
+	
     
     AsyncTask <Void,Void,JSONArray> fetchRecent = new AsyncTask<Void,Void,JSONArray>(){
 
@@ -147,7 +142,7 @@ public class ChatActivity extends Activity implements OnClickListener
 				if(jsonArray!=null){
 					for(int i =jsonArray.length();i>0;i--){
 						JSONObject obj = jsonArray.getJSONObject(i-1);
-						Message m = new Message(obj.getLong("id"),obj.getLong("fromUser") ,obj.getLong("toUser"), obj.getString("message"), obj.getString("time"), 0);
+						Msg m = new Msg(obj.getLong("id"),obj.getLong("fromUser") ,obj.getLong("toUser"), obj.getString("message"), obj.getString("time"), 0);
 						messages.add(m);
 					}
 					logLastMessage(messages.get(messages.size()-1));
@@ -160,8 +155,7 @@ public class ChatActivity extends Activity implements OnClickListener
         }
     };
     
-    private Handler handler;
-	
+   
 	
     @Override
     public void onCreate(Bundle savedInstanceState) 
@@ -180,17 +174,21 @@ public class ChatActivity extends Activity implements OnClickListener
         
         btnSend.setOnClickListener(this);
         
-        messages = new ArrayList<Message>();
-        adapter = new MessageListAdapter(this, messages, currentUser, contact);
+        messages = new ArrayList<Msg>();
+        adapter = new MsgListAdapter(this, messages, currentUser, contact);
         chatList.setAdapter(adapter);
         
         fetchRecent.execute((Void[]) null);  
-        handler =  new Handler();
+        dHandler =  new msgHandler();
         
-        fetchTimer = new Timer();
-        fetchTimer.schedule(fetchTask, 1000,1000);
+        mContext = this;
+        MessageCenter.my_id = (int)currentUser.getMemberId();
+        dHandler = new msgHandler();
+        Intent intent= new Intent(this, MessageCenter.class);
+    	boolean bindsuccess = bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        
     }
-    Timer fetchTimer;
+   
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_chat, menu);
@@ -200,7 +198,7 @@ public class ChatActivity extends Activity implements OnClickListener
     
 
     public void onStop(){
-    	fetchTimer.cancel();
+    	unbindService(mConnection);
     	super.onStop();
     }
     
@@ -243,7 +241,7 @@ public class ChatActivity extends Activity implements OnClickListener
 			}
 			
 			DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			Message m = new Message(Long.parseLong(messageid), currentUser.getMemberId(), contact.getMemberId(), message, df.format(new Date()), 0);
+			Msg m = new Msg(Long.parseLong(messageid), currentUser.getMemberId(), contact.getMemberId(), message, df.format(new Date()), 0);
 			messages.add(m);
 			logLastMessage(messages.get(messages.size()-1));
 			adapter.notifyDataSetChanged();
@@ -258,7 +256,7 @@ public class ChatActivity extends Activity implements OnClickListener
         return contentResolver.delete(uri, null, null);
     }
     
-	public int logLastMessage(Message message){
+	public int logLastMessage(Msg message){
 		long otherId;
 		if(message.getFromUserId()==currentUser.getMemberId()){
 			otherId = message.getToUserId();

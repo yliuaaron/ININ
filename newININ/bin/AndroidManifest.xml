@@ -70,6 +70,7 @@
             android:authorities = "com.linkedin.localin.ININ"
             android:multiprocess="true"
             android:name=".ConversationProvider"></provider>
+        <service android:name = ".MessageCenter"></service>
     </application>
 
 </manifest>
