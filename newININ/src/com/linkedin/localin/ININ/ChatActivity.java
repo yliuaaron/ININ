@@ -75,7 +75,10 @@ public class ChatActivity extends Activity implements OnClickListener
 
             switch(msg.what){
             case 1:
-            	Toast.makeText(mContext, "works", Toast.LENGTH_LONG).show();
+            	//Toast.makeText(mContext, "works", Toast.LENGTH_LONG).show();
+            	ArrayList<Msg> list = (ArrayList<Msg>)msg.obj;
+            	messages.addAll(list);
+            	adapter.notifyDataSetChanged();
             //Implement this
           }
       }
@@ -195,10 +198,18 @@ public class ChatActivity extends Activity implements OnClickListener
         return true;
     }
     
-    
+    @Override
+    public void onRestart(){
+        Intent intent= new Intent(this, MessageCenter.class);
+    	boolean bindsuccess = bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    	Log.d("message","restart");
+    	super.onRestart();
+    }
 
+    @Override
     public void onStop(){
     	unbindService(mConnection);
+    	Log.d("message", "disconnect");
     	super.onStop();
     }
     
