@@ -757,8 +757,12 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     			contact.setDistance(distanceByLatLng(bestLocation.getLatitude(), bestLocation.getLongitude(),
       							contact.getLatitude(), contact.getLongitude()));
     			tempList.add(contact);		            		  
+    			
     		
-    		
+    	}
+    	if(tempList.size()>contacts.size()){
+    		contacts.clear();
+    		contacts.addAll(tempList);
     	}
     	Collections.sort(contacts);
     	

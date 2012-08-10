@@ -165,7 +165,7 @@ public class ProfileActivity extends Activity implements OnClickListener
         	expText.setText(posStr);
         }
         
-        if(addInfo.getEducations().getTotal() > 0)
+        if(addInfo.getEducations() != null && addInfo.getEducations().getTotal() > 0)
         {
         	Education edu = addInfo.getEducations().getEducationList().get(0);
         	String eduStr = edu.getSchoolName() + "\n" + edu.getStartDate().getYear() + " - ";
