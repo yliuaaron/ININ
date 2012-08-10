@@ -1,6 +1,7 @@
 package com.linkedin.localin.ININ;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import com.example.androidhive.ImageLoader;
 
@@ -58,6 +59,7 @@ public class ContactListAdapter extends BaseAdapter
 		TextView info = (TextView)vi.findViewById(R.id.info);
 		TextView distance = (TextView)vi.findViewById(R.id.distance);
 		ImageView thumb_image = (ImageView)vi.findViewById(R.id.list_image);
+		TextView time = (TextView)vi.findViewById(R.id.time);
 		
 		Contact contact = data.get(position);
 		name.setText(contact.getName());
@@ -66,6 +68,15 @@ public class ContactListAdapter extends BaseAdapter
 		//distance.setText("" + contact.getLatitude() + ", " + contact.getLongitude());
 		distance.setText(Math.round(contact.getDistance() * 100.0) / 100.0 + " mi");
 		imageLoader.DisplayImage(contact.getPicUrl(), thumb_image);
+		
+		Date now = new Date();
+		Long diff = now.getTime() - contact.getLastUpdate().getTime();
+		int minutes = (int)(diff / 1000 / 60) + 180;
+		
+		if(minutes < 60)
+			time.setText("" + minutes + "mins ago");
+		else
+			time.setText("" + (minutes / 60) + "hrs ago"); 
 		
 		return vi;
 	}

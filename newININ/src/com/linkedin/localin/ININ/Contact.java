@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 
@@ -24,8 +25,59 @@ public class Contact implements Serializable, Comparable<Contact>
 	private String _picUrl;
 	private Date _lastUpdate;
 	
+	private ArrayList<String> _skills = new ArrayList<String>();
+	private ArrayList<String> _educations = new ArrayList<String>();
+	private ArrayList<String> _positions = new ArrayList<String>();
+	
 	private double _lat;
 	private double _lng;
+	
+	public String getSkill()
+	{
+		StringBuilder sb = new StringBuilder();
+		for(String skill : _skills)
+		{
+			sb.append(skill);
+			sb.append(" ");
+		}
+		return sb.toString().trim();
+	}
+	public String getEducation()
+	{
+		StringBuilder sb = new StringBuilder();
+		for(String edu : _educations)
+		{
+			sb.append(edu);
+			sb.append(" ");
+		}
+		return sb.toString().trim();
+	}
+	public String getPosition()
+	{
+		StringBuilder sb = new StringBuilder();
+		for(String pos : _positions)
+		{
+			sb.append(pos);
+			sb.append(" ");
+		}
+		return sb.toString().trim();
+	}
+	
+	public void setSkills(ArrayList<String> skills)
+	{
+		this._skills = new ArrayList<String>();
+		this._skills.addAll(skills);
+	}
+	public void setEducations(ArrayList<String> educations)
+	{
+		this._educations = new ArrayList<String>();
+		this._educations.addAll(educations);
+	}
+	public void setPositions(ArrayList<String> positions)
+	{
+		this._positions = new ArrayList<String>();
+		this._positions.addAll(positions);
+	}
 	
 	public void setLat(Double lat){
 		this._lat = lat;

@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +31,9 @@ import com.google.code.linkedinapi.client.enumeration.ProfileField;
 import com.google.code.linkedinapi.client.oauth.LinkedInAccessToken;
 import com.google.code.linkedinapi.client.oauth.LinkedInOAuthService;
 import com.google.code.linkedinapi.client.oauth.LinkedInOAuthServiceFactory;
+import com.google.code.linkedinapi.schema.Education;
 import com.google.code.linkedinapi.schema.Person;
+import com.google.code.linkedinapi.schema.Position;
 
 
 
@@ -446,7 +449,13 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     							ProfileField.INDUSTRY,
     							ProfileField.PICTURE_URL,
     							ProfileField.PUBLIC_PROFILE_URL,
-    							ProfileField.SITE_STANDARD_PROFILE_REQUEST_URL));
+    							ProfileField.SITE_STANDARD_PROFILE_REQUEST_URL,
+    							ProfileField.SKILLS_SKILL_NAME,
+    							ProfileField.EDUCATIONS_SCHOOL_NAME,
+    							ProfileField.EDUCATIONS_DEGREE,
+    							ProfileField.EDUCATIONS_FIELD_OF_STUDY,
+    							ProfileField.POSITIONS_COMPANY_NAME,
+    							ProfileField.POSITIONS_TITLE));
     			
     			String url = currentUser.getSiteStandardProfileRequest().getUrl();
         		int mid = Integer.parseInt(Uri.parse(url).getQueryParameter("key"));
@@ -461,6 +470,52 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     					currentUser.getIndustry(),
     					currentUser.getPictureUrl(),
     					0.0, 0.0, "");
+    			
+    			if(currentUser.getSkills() != null)
+    			{
+    				ArrayList<String> skills = new ArrayList<String>();
+    				for(int i = 0; i < currentUser.getSkills().getTotal(); i++)
+    				{
+    					skills.add(currentUser.getSkills().getSkillList().get(i).getSkill().getName());
+    				}
+    				currentUserContact.setSkills(skills);
+    			}
+    			if(currentUser.getEducations() != null)
+    			{
+    				ArrayList<String> educations = new ArrayList<String>();
+    				List<Education> lstEdu = currentUser.getEducations().getEducationList();
+    				for(int i = 0; i < currentUser.getEducations().getTotal(); i++)
+    				{
+    					Education edu = lstEdu.get(i);
+    					String school = edu.getSchoolName();
+    					if(school == null) school = "";
+    					String deg = edu.getDegree();
+    					if(deg == null) deg = "";
+    					String field = edu.getFieldOfStudy();
+    					if(field == null) field = "";
+    					
+    					educations.add((school + " " + deg + " " + field).trim());
+    				}
+    				currentUserContact.setEducations(educations);
+    			}
+    			if(currentUser.getPositions() != null)
+    			{
+    				ArrayList<String> positions = new ArrayList<String>();
+    				List<Position> lstPos = currentUser.getPositions().getPositionList();
+    				for(int i = 0; i < currentUser.getPositions().getTotal(); i++)
+    				{
+    					Position pos = lstPos.get(i);
+    					String title = pos.getTitle();
+    					if(title == null) title = "";
+    					String comp = pos.getCompany().getName();
+    					if(comp == null) comp = "";
+    					
+    					positions.add((title + " " + comp).trim());
+    				}
+    				currentUserContact.setPositions(positions);
+    			}
+    			
+    			
 //    			TextView textView = (TextView) findViewById(R.id.textView2);
 //    			textView.setText("Hello " + currentUser.getFirstName() + "!");
     			Log.d("info", currentUser.getPublicProfileUrl());
@@ -638,6 +693,9 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     		params.add(new BasicNameValuePair("location", currentUser.getLocation().getName()));
     		params.add(new BasicNameValuePair("industry", currentUser.getIndustry()));
     		params.add(new BasicNameValuePair("pic", currentUser.getPictureUrl()));
+    		params.add(new BasicNameValuePair("skill", currentUserContact.getSkill()));
+    		params.add(new BasicNameValuePair("edu", currentUserContact.getEducation()));
+    		params.add(new BasicNameValuePair("pos", currentUserContact.getPosition()));
     		params.add(new BasicNameValuePair("lat", "" + bestLocation.getLatitude()));
     		params.add(new BasicNameValuePair("lng", "" + bestLocation.getLongitude()));
     		logpost.setEntity(new UrlEncodedFormEntity(params));
@@ -765,10 +823,27 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     		contacts.addAll(tempList);
     	}
     	Collections.sort(contacts);
+    	Collections.sort(tempList);
     	
-    		
-    		ContactListAdapter adapter = new ContactListAdapter(this, tempList);
-    		listView.setAdapter(adapter);
+    	//TODO: please do this removal to the arraylist you are using to display
+    	ArrayList<Contact> toRemove = new ArrayList<Contact>();
+    	for(int i = 0; i < contacts.size(); i++)
+    	{
+    		Contact cont = contacts.get(i);
+    		Date now = new Date();
+    		Long diff = now.getTime() - cont.getLastUpdate().getTime();
+    		int minutes = (int)(diff / 1000 / 60) + 180;
+    		if(minutes > 12 * 60) // if last seen older than 12 hours
+    			toRemove.add(cont);
+    	}
+    	for(Contact remove : toRemove)
+    	{
+    		contacts.remove(remove);
+    	}
+    	
+    	// TODO: please sort the contact by distance	
+		ContactListAdapter adapter = new ContactListAdapter(this, tempList);
+		listView.setAdapter(adapter);
     	
         btnFilter = (Button)mSectionsPagerAdapter.list.getView().findViewById(R.id.btnFilter);
         editFilter = (EditText)mSectionsPagerAdapter.list.getView().findViewById(R.id.editFilter);
