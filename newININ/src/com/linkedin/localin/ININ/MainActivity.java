@@ -833,20 +833,20 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     	Collections.sort(tempList);
     	
     	//TODO: please do this removal to the arraylist you are using to display
-//    	ArrayList<Contact> toRemove = new ArrayList<Contact>();
-//    	for(int i = 0; i < contacts.size(); i++)
-//    	{
-//    		Contact cont = contacts.get(i);
-//    		Date now = new Date();
-//    		Long diff = now.getTime() - cont.getLastUpdate().getTime();
-//    		int minutes = (int)(diff / 1000 / 60) + 180;
-//    		if(minutes > 12 * 60) // if last seen older than 12 hours
-//    			toRemove.add(cont);
-//    	}
-//    	for(Contact remove : toRemove)
-//    	{
-//    		contacts.remove(remove);
-//    	}
+    	ArrayList<Contact> toRemove = new ArrayList<Contact>();
+    	for(int i = 0; i < tempList.size(); i++)
+    	{
+    		Contact cont = tempList.get(i);
+    		Date now = new Date();
+    		Long diff = now.getTime() - cont.getLastUpdate().getTime();
+    		int minutes = (int)(diff / 1000 / 60) + 180;
+    		if(minutes > 12 * 60) // if last seen older than 12 hours
+    			toRemove.add(cont);
+    	}
+    	for(Contact remove : toRemove)
+    	{
+    		tempList.remove(remove);
+    	}
     	
     	// TODO: please sort the contact by distance	
 		ContactListAdapter adapter = new ContactListAdapter(this, tempList);
