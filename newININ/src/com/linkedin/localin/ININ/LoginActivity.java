@@ -43,7 +43,7 @@ public class LoginActivity extends Activity
         webview.setVisibility(View.GONE);
         
         Button btnLogin = (Button) findViewById(R.id.button1);
-        btnLogin.setText("Login with LinkedIn");
+        //btnLogin.setText("Login with LinkedIn");
         btnLogin.setOnClickListener(new OnClickListener() {
 			
 			@Override

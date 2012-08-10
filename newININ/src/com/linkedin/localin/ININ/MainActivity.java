@@ -189,6 +189,8 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
         
         conversationAdapter = new ConversationListAdapter(this,conversationPeople,conversationMsg);
         
+        
+        
     }
     ConversationListAdapter conversationAdapter;
     @Override
@@ -724,6 +726,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     
     private void queryNearbyUsers(final String filterStr)
     {
+    	
     	AsyncTask<Void, Void, JSONArray> mTask = new AsyncTask<Void, Void, JSONArray>() {
     		
             @Override
@@ -776,7 +779,11 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
             @Override
             protected void onPostExecute(JSONArray result) {
-            	loadNearbyUsers(result);
+            	boolean filterMode = false;
+            	if(filterStr!=null){
+            		filterMode = true;
+            	}
+            	loadNearbyUsers(result,filterMode);
             }
         };
         mTask.execute((Void[]) null);    	
@@ -792,7 +799,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     	return null;
     }
     ContactListAdapter adapter = null;
-    private void loadNearbyUsers(JSONArray array)
+    private void loadNearbyUsers(JSONArray array, boolean filterMode)
     {
     	//contacts;
     	ArrayList<Contact> tempList = new ArrayList<Contact>();
@@ -818,34 +825,34 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
     			
     		
     	}
-    	if(tempList.size()>contacts.size()){
+    	if(!filterMode){	//its an update
     		contacts.clear();
     		contacts.addAll(tempList);
     	}
-    	Collections.sort(contacts);
+    	
     	Collections.sort(tempList);
     	
     	//TODO: please do this removal to the arraylist you are using to display
-    	ArrayList<Contact> toRemove = new ArrayList<Contact>();
-    	for(int i = 0; i < contacts.size(); i++)
-    	{
-    		Contact cont = contacts.get(i);
-    		Date now = new Date();
-    		Long diff = now.getTime() - cont.getLastUpdate().getTime();
-    		int minutes = (int)(diff / 1000 / 60) + 180;
-    		if(minutes > 12 * 60) // if last seen older than 12 hours
-    			toRemove.add(cont);
-    	}
-    	for(Contact remove : toRemove)
-    	{
-    		contacts.remove(remove);
-    	}
+//    	ArrayList<Contact> toRemove = new ArrayList<Contact>();
+//    	for(int i = 0; i < contacts.size(); i++)
+//    	{
+//    		Contact cont = contacts.get(i);
+//    		Date now = new Date();
+//    		Long diff = now.getTime() - cont.getLastUpdate().getTime();
+//    		int minutes = (int)(diff / 1000 / 60) + 180;
+//    		if(minutes > 12 * 60) // if last seen older than 12 hours
+//    			toRemove.add(cont);
+//    	}
+//    	for(Contact remove : toRemove)
+//    	{
+//    		contacts.remove(remove);
+//    	}
     	
     	// TODO: please sort the contact by distance	
 		ContactListAdapter adapter = new ContactListAdapter(this, tempList);
 		listView.setAdapter(adapter);
     	
-        btnFilter = (Button)mSectionsPagerAdapter.list.getView().findViewById(R.id.btnFilter);
+		btnFilter = (Button)mSectionsPagerAdapter.list.getView().findViewById(R.id.btnFilter);
         editFilter = (EditText)mSectionsPagerAdapter.list.getView().findViewById(R.id.editFilter);
     	btnFilter.setOnClickListener(new OnClickListener() 
     	{
@@ -858,7 +865,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 				{
 					String filterStr = filter.replaceAll("\\s+", "+");
 					queryNearbyUsers(filterStr);
-					Toast.makeText(mContext, "Filtered by '" + filter + "'", Toast.LENGTH_LONG).show();
+					Toast.makeText(mContext, "People with " + filter, Toast.LENGTH_LONG).show();
 					
 					InputMethodManager inputManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE); 
 					inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
@@ -869,6 +876,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 				
 			}
 		});
+        
     }
     
     

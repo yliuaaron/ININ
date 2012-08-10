@@ -37,8 +37,8 @@ public class ProfileActivity extends Activity implements OnClickListener
 	private TextView infoText;
 	private ImageView profileImage;
 	private TextView locText;
-	private TextView connText;
-	private TextView commonText;
+	//private TextView connText;
+	//private TextView commonText;
 	private TextView sumText;
 	private TextView skillText;
 	private TextView expText;
@@ -68,8 +68,8 @@ public class ProfileActivity extends Activity implements OnClickListener
         infoText = (TextView) findViewById(R.id.textView3);
         profileImage = (ImageView)findViewById(R.id.profile_image);
         locText = (TextView) findViewById(R.id.textView4);
-        connText = (TextView) findViewById(R.id.textView5);
-        commonText = (TextView) findViewById(R.id.textView6);
+        //connText = (TextView) findViewById(R.id.textView5);
+        //commonText = (TextView) findViewById(R.id.textView6);
         sumText = (TextView)findViewById(R.id.textView10);
         skillText=(TextView)findViewById(R.id.textView12);
         expText = (TextView)findViewById(R.id.textView14);
@@ -149,8 +149,8 @@ public class ProfileActivity extends Activity implements OnClickListener
         skillStr = skillStr.substring(0, skillStr.length() - 1);
         
         
-        connText.setText("" + addInfo.getNumConnections());
-        commonText.setText("" + addInfo.getRelationToViewer().getRelatedConnections().getTotal());
+        //connText.setText("" + addInfo.getNumConnections());
+        //commonText.setText("" + addInfo.getRelationToViewer().getRelatedConnections().getTotal());
         sumText.setText(addInfo.getSummary());
         skillText.setText(skillStr);
         

@@ -40,13 +40,15 @@
         <Button
             android:id="@+id/btnFilter"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="32dp"
             android:layout_weight="1"
             android:text="Hunt!"
             android:textSize="18dp"
             android:textStyle="bold"
             android:textColor="#FFFFFF" 
-            android:drawableLeft="@drawable/ic_action_search"/>
+            android:drawableLeft="@drawable/ic_action_search"
+            android:background="@drawable/button"
+            />
         
     </LinearLayout>
 
